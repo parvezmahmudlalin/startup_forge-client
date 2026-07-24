@@ -22,6 +22,6 @@ export const imageUploader = async (imageFile) => {
     throw new Error(data.error?.message || "Failed to upload image to ImgBB.");
   }
 
-  // ImgBB response object-এর ভেতর থেকে Direct Link / Display URL রিটার্ন করা
+  
   return data.data.url;
 };

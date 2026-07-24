@@ -14,7 +14,6 @@ export function useRegisterForm() {
     role: "Collaborator",
   });
 
-  // 💡 আলাদা আলাদা useState না রেখে UI Status একটা অবজেক্টে নিয়ে আসা
   const [status, setStatus] = useState({ loading: false, uploading: false, error: "" });
 
   const passwordRules = {

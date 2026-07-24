@@ -6,12 +6,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Input } from "@heroui/react";
 import { Rocket } from "@gravity-ui/icons";
 import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
+import { authClient } from "@/lib/auth-client"; // Better Auth client
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // 🎯 Intended Route হ্যান্ডলিং (URL-এ redirectTo না থাকলে ডিফল্ট Home Page '/')
+  // 🎯 Intended Route
   const redirectTo = searchParams.get("redirectTo") || "/";
 
   // Form States
@@ -22,35 +23,72 @@ export default function LoginPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // 1. Credential Login Handler (UI Only)
-  const handleCredentialLogin = (e) => {
+  // 1. Email/Password Login Handler
+  const handleCredentialLogin = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
+
+    if (!formData.email || !formData.password) {
+      setErrorMessage("Please fill in all fields.");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setErrorMessage("Password must be at least 6 characters long.");
+      return;
+    }
+
     setLoading(true);
 
-    // 🚀 Simulating Authentication Success
-    setTimeout(() => {
+    try {
+      const { data, error } = await authClient.signIn.email({
+        email: formData.email,
+        password: formData.password,
+        callbackURL: redirectTo,
+      });
+
+      if (error) {
+        // ভুল ইমেইল বা পাসওয়ার্ড দিলে ইউজারকে ক্লিয়ার মেসেজ দেওয়া
+        if (error.status === 401 || error.status === 400) {
+          setErrorMessage("Invalid email or password. Please try again.");
+        } else {
+          setErrorMessage(error.message || "Failed to sign in. Please try again.");
+        }
+        setLoading(false);
+        return;
+      }
+
+      router.push(redirectTo);
+    } catch (err) {
+      console.error("Login error:", err);
+      setErrorMessage("An unexpected error occurred. Please try again.");
+    } finally {
       setLoading(false);
-      console.log("Logged in with Credentials:", formData);
-      router.push(redirectTo); // Intended Route বা Home Page-এ রিডাইরেক্ট
-    }, 1000);
+    }
   };
 
-  // 2. Google Login Handler (UI Only)
-  const handleGoogleLogin = () => {
+  // 2. Google OAuth Login Handler
+  const handleGoogleLogin = async () => {
+    setErrorMessage("");
     setLoading(true);
 
-    // 🚀 Simulating Social Login Redirect
-    setTimeout(() => {
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: redirectTo,
+      });
+    } catch (err) {
+      console.error("Google Auth Error:", err);
+      setErrorMessage("Failed to initiate Google login. Please try again.");
       setLoading(false);
-      console.log("Logged in with Google");
-      router.push(redirectTo); // Intended Route বা Home Page-এ রিডাইরেক্ট
-    }, 1000);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-xl space-y-8 bg-white dark:bg-gray-900 p-8 sm:p-10 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-xl shadow-indigo-500/5">
+      <div className="w-full max-w-md space-y-6 bg-white dark:bg-gray-900 p-8 sm:p-10 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-xl shadow-indigo-500/5">
         
         {/* Header Section */}
         <div className="text-center space-y-2">
@@ -59,13 +97,20 @@ export default function LoginPage() {
               <Rocket className="h-6 w-6" />
             </div>
           </Link>
-          <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white mt-4">
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mt-3">
             Welcome Back
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             Sign in to continue to StartupForge
           </p>
         </div>
+
+        {/* Error Alert Message */}
+        {errorMessage && (
+          <div className="p-3 text-xs rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 font-medium text-center animate-shake">
+            {errorMessage}
+          </div>
+        )}
 
         {/* Google OAuth Login Button */}
         <div>
@@ -73,26 +118,26 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full h-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center justify-center gap-3 transition-colors"
+            className="w-full h-11 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center justify-center gap-3 transition-all"
           >
-            <FaGoogle className="h-5 w-5 text-red-500" />
-            <span>Continue with Google</span>
+            <FaGoogle className="h-4 w-4 text-red-500" />
+            <span className="text-sm">Continue with Google</span>
           </Button>
         </div>
 
         {/* Divider */}
         <div className="relative flex items-center justify-center">
           <div className="border-t border-gray-200 dark:border-gray-800 w-full" />
-          <span className="bg-white dark:bg-gray-900 px-3 text-xs text-gray-400 uppercase tracking-wider absolute">
+          <span className="bg-white dark:bg-gray-900 px-3 text-[10px] text-gray-400 uppercase tracking-wider absolute">
             Or Sign In With Email
           </span>
         </div>
 
         {/* Email & Password Form */}
-        <form onSubmit={handleCredentialLogin} className="space-y-6">
+        <form onSubmit={handleCredentialLogin} className="space-y-4">
           {/* Email Field */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
               Email Address
             </label>
             <Input
@@ -107,7 +152,7 @@ export default function LoginPage() {
 
           {/* Password Field */}
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                 Password
               </label>
@@ -124,9 +169,9 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1"
               >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                {showPassword ? <FaEyeSlash className="h-4 w-4" /> : <FaEye className="h-4 w-4" />}
               </button>
             </div>
           </div>
@@ -135,14 +180,14 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-12 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 disabled:opacity-50"
+            className="w-full h-11 bg-indigo-600 text-white font-semibold text-sm rounded-xl hover:bg-indigo-700 shadow-md shadow-indigo-500/20 disabled:opacity-50 transition-all mt-2"
           >
             {loading ? "Signing In..." : "Sign In"}
           </Button>
         </form>
 
         {/* Footer Link */}
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400">
           Don't have an account?{" "}
           <Link href="/register" className="font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
             Create Account

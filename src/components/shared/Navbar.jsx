@@ -9,27 +9,25 @@ import { CgProfile } from "react-icons/cg";
 import { MdDashboard } from "react-icons/md";
 import { HiMenuAlt3, HiX } from "react-icons/hi";
 import { Rocket } from "@gravity-ui/icons";
+import { authClient } from "@/lib/auth-client";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // 🧪 UI টেস্ট বা প্রেজেন্টেশনের জন্য ফেক ইউজার স্টেট (প্রয়োজনে true/false করে দেখতে পারেন)
-  const isLoggedIn = true; 
-  const user = {
-    name: "Alex Rivera",
-    email: "alex@startupforge.com",
-    image: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
-    role: "Founder", // Founder / Collaborator / Admin
-  };
+  const { data: session, isPending } = authClient.useSession();
+  const user = session?.user;
+
+  // ইউজার অবজেক্ট আসল কিনা তা ডায়নামিকালি চেক করা হচ্ছে
+  const isLoggedIn = !!user;
 
   const handleSignOut = async () => {
+    await authClient.signOut();
     console.log("Signing out...");
   };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md dark:border-gray-800 dark:bg-gray-950/80">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        
         {/* Left Side: Logo & Brand */}
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -74,7 +72,9 @@ const Navbar = () => {
 
         {/* Right Side: Auth Buttons / User Profile */}
         <div className="hidden items-center gap-3 md:flex">
-          {!isLoggedIn ? (
+          {isPending ? (
+            <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200 dark:bg-gray-800" />
+          ) : !isLoggedIn ? (
             <>
               <Link
                 href="/login"
@@ -94,11 +94,12 @@ const Navbar = () => {
                 <Avatar size="md" className="ring-2 ring-indigo-500/30">
                   <Avatar.Image
                     referrerPolicy="no-referrer"
-                    alt={user.name}
-                    src={user.image}
+                    alt={user?.name || "User"}
+                    src={user?.image || undefined}
                   />
                   <Avatar.Fallback className="bg-indigo-100 font-semibold text-indigo-700">
-                    {user.name.charAt(0)}
+                    {/* 🔧 FIX: Optional chaining এবং fallback যুক্ত করা হয়েছে */}
+                    {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
                   </Avatar.Fallback>
                 </Avatar>
               </Dropdown.Trigger>
@@ -106,14 +107,17 @@ const Navbar = () => {
                 {/* User Info Header */}
                 <div className="border-b border-gray-100 px-3 py-2.5 dark:border-gray-800">
                   <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {user.name}
+                    {user?.name || "User"}
                   </p>
                   <p className="truncate text-xs text-gray-500 dark:text-gray-400">
-                    {user.email}
+                    {user?.email || ""}
                   </p>
-                  <span className="mt-1.5 inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
-                    {user.role}
-                  </span>
+                  {/* 🔧 FIX: Optional chaining দেওয়া হয়েছে যেন role না থাকলেও ক্র্যাশ না করে */}
+                  {user?.role && (
+                    <span className="mt-1.5 inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
+                      {user.role}
+                    </span>
+                  )}
                 </div>
 
                 {/* Dropdown Menu Links */}
