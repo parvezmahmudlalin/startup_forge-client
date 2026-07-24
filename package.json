@@ -16,6 +16,7 @@
     "auth": "^1.6.25",
     "better": "^0.1.0",
     "better-auth": "^1.6.25",
+    "framer-motion": "^12.42.2",
     "lucide-react": "^1.26.0",
     "mongodb": "^7.5.0",
     "next": "16.2.11",
