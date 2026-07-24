@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@heroui/react";
 import { authClient } from "@/lib/auth-client";
+import { imageUploader } from "@/lib/imageUploader"; // 👈 আপনার তৈরি করা হেলপার ফাংশন
 
 import RoleSelector from "./RoleSelector";
 import ImageUpload from "./ImageUpload";
@@ -36,7 +37,7 @@ export default function RegisterForm() {
   const isPasswordValid =
     passwordRules.hasMinLength && passwordRules.hasUpper && passwordRules.hasLower;
 
-  // ImgBB Image Upload
+  // ImgBB Image Upload via lib/imageUploader
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -44,24 +45,15 @@ export default function RegisterForm() {
     setUploadingImage(true);
     setErrorMsg("");
 
-    const imgData = new FormData();
-    imgData.append("image", file);
-
     try {
-      const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY || "YOUR_IMGBB_API_KEY";
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-        method: "POST",
-        body: imgData,
-      });
+      // 🚀 lib ফোল্ডারের imageUploader ফাংশন কল করা হচ্ছে
+      const imageUrl = await imageUploader(file);
 
-      const data = await res.json();
-      if (data.success) {
-        setFormData((prev) => ({ ...prev, image: data.data.url }));
-      } else {
-        setErrorMsg("Failed to upload image to ImgBB. Try again or paste URL.");
+      if (imageUrl) {
+        setFormData((prev) => ({ ...prev, image: imageUrl }));
       }
     } catch (error) {
-      setErrorMsg("Image upload failed. Please check your network or API key.");
+      setErrorMsg(error.message || "Image upload failed. Please try again.");
     } finally {
       setUploadingImage(false);
     }
@@ -85,15 +77,27 @@ export default function RegisterForm() {
     setLoading(true);
 
     try {
-      console.log("Registration Payload:", formData);
       const { email, password, name, image, role } = formData;
-      
-      await authClient.signUp.email({ email, password, name, image, role });
+
+      // 🔑 Better Auth sign-up call
+      const { data, error } = await authClient.signUp.email({
+        email,
+        password,
+        name,
+        image,
+        role,
+      });
+
+      if (error) {
+        setErrorMsg(error.message || "Registration failed. Please try again.");
+        setLoading(false);
+        return;
+      }
 
       // Successful Registration Redirect
       router.push("/login");
     } catch (err) {
-      setErrorMsg(err.message || "Registration failed. Please try again.");
+      setErrorMsg(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
