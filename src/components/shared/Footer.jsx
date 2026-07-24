@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import React from "react";
-import { RocketIcon } from "@gravity-ui/icons";
+import {  Rocket } from "@gravity-ui/icons";
 import { 
   FaGithub, 
   FaLinkedin, 
@@ -25,7 +25,7 @@ const Footer = () => {
           <div className="space-y-4 lg:col-span-2">
             <Link href="/" className="flex items-center gap-2.5 group w-fit">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white shadow-md shadow-indigo-500/20 transition-transform group-hover:scale-105">
-                <RocketIcon className="h-5 w-5" />
+                <Rocket className="h-5 w-5" />
               </div>
               <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
                 Startup<span className="text-indigo-600 dark:text-indigo-400">Forge</span>
