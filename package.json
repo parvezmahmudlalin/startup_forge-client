@@ -13,6 +13,8 @@
     "@gravity-ui/icons": "^2.21.0",
     "@heroui/react": "^3.2.2",
     "@heroui/styles": "^3.2.2",
+    "auth": "^1.6.25",
+    "better": "^0.1.0",
     "better-auth": "^1.6.25",
     "lucide-react": "^1.26.0",
     "mongodb": "^7.5.0",
