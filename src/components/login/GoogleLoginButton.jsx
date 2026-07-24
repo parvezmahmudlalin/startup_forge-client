@@ -1,13 +1,20 @@
 import React from "react";
 import { Button } from "@heroui/react";
 import { FaGoogle } from "react-icons/fa";
-
+import { authClient } from "../../lib/auth-client";
 export default function GoogleLoginButton({ onClick, loading }) {
+
+  const handleGoogleLogin = async () => {
+    await authClient.signIn.social({
+      provider: "google",
+      redirectTo: "/",
+    });
+    }
   return (
     <div>
-      <Button
+      <Button 
         type="button"
-        onClick={onClick}
+        onClick={handleGoogleLogin}
         disabled={loading}
         className="w-full h-11 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 flex items-center justify-center gap-3 transition-all"
       >
