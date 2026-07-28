@@ -12,9 +12,16 @@ import {
   FaMapMarkerAlt, 
   FaPhoneAlt 
 } from "react-icons/fa";
+import { usePathname } from "next/navigation";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+
+  const pathname = usePathname();
+
+  if(pathname.includes("dashboard")){
+    return null;
+  }
 
   return (
     <footer className="border-t border-gray-100 bg-white text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400">

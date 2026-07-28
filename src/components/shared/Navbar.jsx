@@ -10,6 +10,7 @@ import { MdDashboard } from "react-icons/md";
 import { HiMenuAlt3, HiX } from "react-icons/hi";
 import { Rocket } from "@gravity-ui/icons";
 import { authClient } from "@/lib/auth-client";
+import { usePathname } from "next/navigation";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -24,6 +25,12 @@ const Navbar = () => {
     await authClient.signOut();
     console.log("Signing out...");
   };
+
+  const pathname = usePathname();
+
+  if(pathname.includes("dashboard")){
+    return null;
+  }
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md dark:border-gray-800 dark:bg-gray-950/80">
