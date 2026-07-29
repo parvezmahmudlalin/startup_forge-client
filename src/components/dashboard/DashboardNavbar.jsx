@@ -46,7 +46,7 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
               <HiHandRaised className="h-4 w-4 md:h-5 md:w-5 text-amber-500 inline-block rotate-12" />
             </h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 capitalize mt-0.5">
-              Role: <span className="font-semibold text-indigo-600 dark:text-indigo-400">{user?.role || "Collaborator"}</span>
+              <span className="font-semibold text-indigo-600 dark:text-indigo-400">{user?.role || "Collaborator"}</span>
             </p>
           </div>
         </div>

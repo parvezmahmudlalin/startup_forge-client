@@ -1,9 +1,9 @@
 "use client";
 
-import { Avatar, Button, Dropdown, Label } from "@heroui/react";
+import { Avatar, Button, Dropdown, Label, useTheme } from "@heroui/react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // 👈 ১. useEffect ইম্পোর্ট করা হলো
 import { BiLogOut } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 import { MdDashboard } from "react-icons/md";
@@ -11,14 +11,22 @@ import { HiMenuAlt3, HiX } from "react-icons/hi";
 import { Rocket } from "@gravity-ui/icons";
 import { authClient } from "@/lib/auth-client";
 import { usePathname } from "next/navigation";
+import { Moon, Sun } from "lucide-react";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+
+ useEffect(() => {
+  const timer = setTimeout(() => setMounted(true), 0);
+  return () => clearTimeout(timer);
+}, []);
 
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
 
-  // ইউজার অবজেক্ট আসল কিনা তা ডায়নামিকালি চেক করা হচ্ছে
   const isLoggedIn = !!user;
 
   const handleSignOut = async () => {
@@ -28,7 +36,7 @@ const Navbar = () => {
 
   const pathname = usePathname();
 
-  if(pathname.includes("dashboard")){
+  if (pathname.includes("dashboard")) {
     return null;
   }
 
@@ -77,8 +85,21 @@ const Navbar = () => {
           </ul>
         </div>
 
-        {/* Right Side: Auth Buttons / User Profile */}
+        {/* Right Side: Auth Buttons / Theme Toggle / User Profile */}
         <div className="hidden items-center gap-3 md:flex">
+          
+          {mounted ? (
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+              aria-label="Toggle Theme"
+            >
+              {theme === "dark" ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+            </button>
+          ) : (
+            <div className="h-10 w-10" /> 
+          )}
+
           {isPending ? (
             <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200 dark:bg-gray-800" />
           ) : !isLoggedIn ? (
@@ -105,7 +126,6 @@ const Navbar = () => {
                     src={user?.image || undefined}
                   />
                   <Avatar.Fallback className="bg-indigo-100 font-semibold text-indigo-700">
-                    {/* 🔧 FIX: Optional chaining এবং fallback যুক্ত করা হয়েছে */}
                     {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
                   </Avatar.Fallback>
                 </Avatar>
@@ -119,7 +139,7 @@ const Navbar = () => {
                   <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                     {user?.email || ""}
                   </p>
-                  {/* 🔧 FIX: Optional chaining দেওয়া হয়েছে যেন role না থাকলেও ক্র্যাশ না করে */}
+
                   {user?.role && (
                     <span className="mt-1.5 inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400">
                       {user.role}
@@ -169,6 +189,19 @@ const Navbar = () => {
 
         {/* Mobile Toggle Button */}
         <div className="flex items-center gap-2 md:hidden">
+         
+          {mounted ? (
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+              aria-label="Toggle Theme"
+            >
+              {theme === "dark" ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+            </button>
+          ) : (
+            <div className="h-10 w-10" />
+          )}
+
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"

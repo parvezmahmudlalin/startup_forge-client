@@ -14,7 +14,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// 🚀 অ্যাসাইনমেন্টের সাথে সঙ্গতিপূর্ণ মেটাডাটা
 export const metadata = {
   title: "StartupForge — Startup Team Builder Platform",
   description: "Connect startup founders with talented collaborators.",
@@ -32,7 +31,7 @@ export default function RootLayout({ children }) {
           {/* Header/Navbar */}
           <Navbar />
 
-          {/* Main Content View (flex-1 নিশ্চিত করবে ফুটার যেন সবসময় নিচে থাকে) */}
+          {/* Content */}
           <main className="flex-1">
             {children}
           </main>
