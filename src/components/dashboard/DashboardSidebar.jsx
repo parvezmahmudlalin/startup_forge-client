@@ -16,9 +16,9 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
   const navMenu = {
     founder: [
       { title: "Overview", href: "/dashboard/founder" },
-      { title: "My Startup", href: "/dashboard/founder/my-startup" },
-      { title: "Add Opportunity", href: "/dashboard/founder/add-opportunity" },
-      { title: "Manage Opportunities", href: "/dashboard/founder/manage-opportunities" },
+      { title: "My Startup", href: "/dashboard/founder/startups" },
+      { title: "Add Opportunity", href: "/dashboard/founder/opportunities" },
+      { title: "Manage Opportunities", href: "/dashboard/founder/opportunities/manage-opportunity" },
       { title: "Applications", href: "/dashboard/founder/applications" },
       { title: "Profile", href: "/dashboard/profile" },
     ],
