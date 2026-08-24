@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-import { Button, Card, Spinner } from "@heroui/react";
+import { Card, Spinner } from "@heroui/react";
 import {
   CirclePlus,
   Pencil,
@@ -22,6 +22,10 @@ export default function MyStartups() {
   const [startup, setStartup] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // =========================
+  // LOAD STARTUP
+  // =========================
+
   useEffect(() => {
     if (session?.user?.email) {
       setLoading(true);
@@ -35,10 +39,7 @@ export default function MyStartups() {
           setStartup(data?._id ? data : null);
         })
         .catch((error) => {
-          console.error(
-            "Failed to load startup:",
-            error
-          );
+          console.error("Failed to load startup:", error);
           setStartup(null);
         })
         .finally(() => {
@@ -49,7 +50,10 @@ export default function MyStartups() {
     }
   }, [session, authLoading]);
 
-  // Loading
+  // =========================
+  // LOADING
+  // =========================
+
   if (authLoading || loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -61,7 +65,10 @@ export default function MyStartups() {
     );
   }
 
-  // Not logged in
+  // =========================
+  // NOT LOGGED IN
+  // =========================
+
   if (!session?.user) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center p-6">
@@ -74,14 +81,12 @@ export default function MyStartups() {
             You need to login to manage your startup.
           </p>
 
-          <Button
-            as={Link}
+          <Link
             href="/login"
-            color="primary"
-            className="mt-5"
+            className="mt-5 inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-primary/90"
           >
             Login
-          </Button>
+          </Link>
         </Card>
       </div>
     );
@@ -89,8 +94,13 @@ export default function MyStartups() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-6">
-      {/* Header */}
+
+      {/* =========================
+          HEADER
+      ========================= */}
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             My Startup
@@ -102,31 +112,34 @@ export default function MyStartups() {
           </p>
         </div>
 
-        {/* IMPORTANT:
-            Button-এর মধ্যে startContent ব্যবহার করছি।
-            Link-এর মধ্যে নয়।
-        */}
+        {/* CREATE STARTUP */}
+
         {!startup && (
-          <Button
-            as={Link}
+          <Link
             href="/dashboard/founder/startups/create-startup"
-            color="primary"
-            startContent={
-              <CirclePlus className="h-4 w-4" />
-            }
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90"
           >
+            <CirclePlus className="h-4 w-4" />
             Create Startup
-          </Button>
+          </Link>
         )}
       </div>
 
-      {/* Startup exists */}
+      {/* =========================
+          STARTUP EXISTS
+      ========================= */}
+
       {startup ? (
         <Card className="border border-default-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-            {/* Startup information */}
+
+            {/* STARTUP INFORMATION */}
+
             <div className="flex items-start gap-4">
-              {/* Logo */}
+
+              {/* LOGO */}
+
               {startup.logo ? (
                 <img
                   src={startup.logo}
@@ -134,14 +147,17 @@ export default function MyStartups() {
                   className="h-20 w-20 rounded-xl border border-default-200 object-cover"
                 />
               ) : (
-                <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-default-100">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-default-100">
                   <House className="h-8 w-8 text-default-400" />
                 </div>
               )}
 
-              {/* Content */}
+              {/* CONTENT */}
+
               <div className="space-y-2">
+
                 <div className="flex flex-wrap items-center gap-3">
+
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                     {startup.startup_name}
                   </h2>
@@ -151,6 +167,7 @@ export default function MyStartups() {
                       {startup.funding_stage}
                     </span>
                   )}
+
                 </div>
 
                 <p className="text-sm font-medium text-gray-500">
@@ -173,26 +190,32 @@ export default function MyStartups() {
                     Status: {startup.status}
                   </span>
                 )}
+
               </div>
             </div>
 
-            {/* Manage */}
-            <Button
-              as={Link}
+            {/* =========================
+                MANAGE STARTUP
+            ========================= */}
+
+            <Link
               href="/dashboard/founder/startups/manage-startup"
-              color="primary"
-              variant="bordered"
-              startContent={
-                <Pencil className="h-4 w-4" />
-              }
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white"
             >
+              <Pencil className="h-4 w-4" />
               Manage Startup
-            </Button>
+            </Link>
+
           </div>
         </Card>
       ) : (
-        /* No startup */
+
+        /* =========================
+           NO STARTUP
+        ========================= */
+
         <Card className="border border-dashed border-default-300 p-10 text-center dark:border-gray-700">
+
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
             <House className="h-7 w-7" />
           </div>
@@ -208,16 +231,16 @@ export default function MyStartups() {
             collaboration opportunities.
           </p>
 
+          {/* CREATE STARTUP */}
+
           <Link
             href="/dashboard/founder/startups/create-startup"
-            color="primary"
-            className="mt-6 font-semibold"
-            startContent={
-              <CirclePlus className="h-4 w-4" />
-            }
+            className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90"
           >
+            <CirclePlus className="h-4 w-4" />
             Create Startup
           </Link>
+
         </Card>
       )}
     </div>
