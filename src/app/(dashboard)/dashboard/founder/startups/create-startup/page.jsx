@@ -1,7 +1,6 @@
 import BackButton from "@/components/dashboard/founder/BackButton";
 import CreateStartupForm from "@/components/dashboard/founder/CreateStartupForm";
-
-import Rocket from "lucide-react/dist/esm/icons/rocket";
+import { Rocket } from "lucide-react";
 
 export const metadata = {
   title: "Create Startup | StartupForge",
@@ -12,7 +11,6 @@ export default function CreateStartupPage() {
   return (
     <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
-        {/* Client component only for router.back() */}
         <BackButton />
 
         <div className="mb-8 text-center">
@@ -27,8 +25,7 @@ export default function CreateStartupPage() {
           </p>
         </div>
 
-        {/* Interactive Client Form */}
-       <CreateStartupForm/>
+        <CreateStartupForm />
 
         <p className="mt-6 text-center text-xs text-default-400">
           StartupForge · Build your team. Build your future.

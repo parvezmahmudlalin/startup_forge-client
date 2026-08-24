@@ -4,13 +4,19 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Button } from "@heroui/react";
 import { Rocket, Mail, Building2, Sparkles, Layers } from "lucide-react";
+
 import LogoUploader from "@/components/dashboard/founder/LogoUploader";
-import { imageUploader } from "@/lib/imageUploader";
+import FormField from "@/components/dashboard/founder/FormField";
+import { imageUploader, serverMutation } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 
-import FormField from "@/components/dashboard/founder/FormField";
-
-const FUNDING_STAGES = ["Bootstrapped", "Idea / Pre-Seed", "Seed", "Series A", "Series B+"];
+const FUNDING_STAGES = [
+  "Bootstrapped",
+  "Idea / Pre-Seed",
+  "Seed",
+  "Series A",
+  "Series B+",
+];
 
 const INITIAL_FORM_DATA = {
   name: "",
@@ -44,20 +50,24 @@ export default function CreateStartupForm() {
     if (!file) return;
 
     setError("");
-    if (!file.type.startsWith("image/")) return setError("Please select a valid image file.");
-    if (file.size > 5 * 1024 * 1024) return setError("Logo image must be less than 5MB.");
+    if (!file.type.startsWith("image/"))
+      return setError("Please select a valid image file.");
+    if (file.size > 5 * 1024 * 1024)
+      return setError("Logo image must be less than 5MB.");
 
     setLogoFile(file);
     setLogoPreview(URL.createObjectURL(file));
   };
 
   const validateForm = () => {
-    if (!session?.user?.email) return "User session not found. Please login again.";
+    if (!session?.user?.email)
+      return "User session not found. Please login again.";
     if (!logoFile) return "Please upload your startup logo.";
     if (!formData.name.trim()) return "Please enter your startup name.";
     if (!formData.industry.trim()) return "Please enter your startup industry.";
     if (!formData.fundingStage) return "Please select a funding stage.";
-    if (!formData.description.trim()) return "Please enter your startup description.";
+    if (!formData.description.trim())
+      return "Please enter your startup description.";
     return null;
   };
 
@@ -74,27 +84,26 @@ export default function CreateStartupForm() {
       const logoUrl = await imageUploader(logoFile);
       if (!logoUrl) throw new Error("Failed to upload startup logo.");
 
-      const response = await fetch("/api/founder/startup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          name: formData.name.trim(),
-          industry: formData.industry.trim(),
-          description: formData.description.trim(),
-          logo: logoUrl,
-          founderEmail: session.user.email,
-        }),
-      });
+      const payload = {
+        startup_name: formData.name.trim(),
+        industry: formData.industry.trim(),
+        description: formData.description.trim(),
+        funding_stage: formData.fundingStage,
+        logo: logoUrl,
+        founder_email: session.user.email,
+      };
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data?.error || "Failed to create startup.");
+      await serverMutation("/api/founder/startup", "POST", payload);
 
-      router.push("/dashboard");
+      router.push("/dashboard/founder/startups");
       router.refresh();
     } catch (err) {
       console.error("Create startup error:", err);
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -108,8 +117,12 @@ export default function CreateStartupForm() {
             <Building2 size={23} className="text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-foreground">Startup Information</h2>
-            <p className="mt-1 text-sm text-default-500">Tell us about your startup.</p>
+            <h2 className="text-lg font-semibold text-foreground">
+              Startup Information
+            </h2>
+            <p className="mt-1 text-sm text-default-500">
+              Tell us about your startup.
+            </p>
           </div>
         </div>
 
@@ -133,7 +146,11 @@ export default function CreateStartupForm() {
           </FormField>
 
           {/* Logo Upload */}
-          <LogoUploader logoPreview={logoPreview} logoFile={logoFile} onLogoChange={handleLogoChange} />
+          <LogoUploader
+            logoPreview={logoPreview}
+            logoFile={logoFile}
+            onLogoChange={handleLogoChange}
+          />
 
           {/* Industry */}
           <FormField label="Industry" required icon={Sparkles}>
@@ -153,16 +170,26 @@ export default function CreateStartupForm() {
               onChange={(e) => handleChange("fundingStage", e.target.value)}
               className="h-14 w-full appearance-none rounded-xl border border-default-200 bg-background pl-11 pr-10 text-sm text-foreground outline-none transition hover:border-default-400 focus:border-primary focus:ring-2 focus:ring-primary/20"
             >
-              <option value="" disabled>Select funding stage</option>
+              <option value="" disabled>
+                Select funding stage
+              </option>
               {FUNDING_STAGES.map((stage) => (
-                <option key={stage} value={stage}>{stage}</option>
+                <option key={stage} value={stage}>
+                  {stage}
+                </option>
               ))}
             </select>
-            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-default-400">▼</span>
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-default-400">
+              ▼
+            </span>
           </FormField>
 
           {/* Description */}
-          <FormField label="Startup Description" required note="Give potential team members a clear idea about your startup.">
+          <FormField
+            label="Startup Description"
+            required
+            note="Give potential team members a clear idea about your startup."
+          >
             <textarea
               rows={6}
               placeholder="Tell us about your startup, the problem you're solving..."
@@ -172,8 +199,12 @@ export default function CreateStartupForm() {
             />
           </FormField>
 
-          {/* Founder Email */}
-          <FormField label="Founder Email" icon={Mail} note="This email is linked to your founder account.">
+          {/* Founder Email (Read Only Warnings Fixed) */}
+          <FormField
+            label="Founder Email"
+            icon={Mail}
+            note="This email is linked to your founder account."
+          >
             <input
               type="email"
               value={session?.user?.email || ""}
