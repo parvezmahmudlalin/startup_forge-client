@@ -11,11 +11,12 @@
   "dependencies": {
     "@better-auth/mongo-adapter": "^1.6.25",
     "@gravity-ui/icons": "^2.21.0",
+    "@heroui/input": "^2.4.33",
     "@heroui/react": "^3.2.2",
     "@heroui/styles": "^3.2.2",
     "auth": "^1.6.25",
     "better": "^0.1.0",
-    "better-auth": "^1.6.25",
+    "better-auth": "^1.6.29",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.26.0",
     "mongodb": "^7.5.0",

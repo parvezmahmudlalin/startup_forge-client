@@ -1,11 +1,11 @@
 import React from 'react';
 
-const FounderPage = () => {
+const FounderOverviewPage = () => {
     return (
         <div>
-            This is the founder page
+            This is the Founder Overview Page
         </div>
     );
 };
 
-export default FounderPage;
+export default FounderOverviewPage;

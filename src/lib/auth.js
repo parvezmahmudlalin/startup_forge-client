@@ -1,5 +1,5 @@
 import dns from "node:dns";
-dns.setServers(["8.8.8.8","8.8.4.4","1.1.1.1","114.114.114.114"]);
+dns.setServers(["8.8.8.8","8.8.4.4","1.1.0.0"]);
 
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
