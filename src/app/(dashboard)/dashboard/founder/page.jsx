@@ -54,7 +54,7 @@ export default function FounderDashboardOverview() {
   if (!session?.user?.email) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <p className="text-gray-400">Please login first.</p>
+        <p className="text-slate-600 dark:text-slate-400">Please login first.</p>
       </div>
     );
   }
@@ -64,25 +64,25 @@ export default function FounderDashboardOverview() {
       title: "Total Opportunities",
       value: stats.totalOpportunities,
       icon: FiBriefcase,
-      color: "text-blue-400",
-      bgColor: "bg-blue-500/10",
-      borderColor: "border-blue-500/20",
+      color: "text-blue-600 dark:text-blue-400",
+      bgColor: "bg-blue-50 dark:bg-blue-500/10",
+      borderColor: "border-slate-200 dark:border-slate-800",
     },
     {
       title: "Total Applications",
       value: stats.totalApplications,
       icon: FiUsers,
-      color: "text-amber-400",
-      bgColor: "bg-amber-500/10",
-      borderColor: "border-amber-500/20",
+      color: "text-amber-600 dark:text-amber-400",
+      bgColor: "bg-amber-50 dark:bg-amber-500/10",
+      borderColor: "border-slate-200 dark:border-slate-800",
     },
     {
       title: "Accepted Members",
       value: stats.acceptedMembers,
       icon: FiUserCheck,
-      color: "text-emerald-400",
-      bgColor: "bg-emerald-500/10",
-      borderColor: "border-emerald-500/20",
+      color: "text-emerald-600 dark:text-emerald-400",
+      bgColor: "bg-emerald-50 dark:bg-emerald-500/10",
+      borderColor: "border-slate-200 dark:border-slate-800",
     },
   ];
 
@@ -90,8 +90,10 @@ export default function FounderDashboardOverview() {
     <div className="mx-auto max-w-6xl space-y-8 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Dashboard Overview</h1>
-        <p className="mt-1 text-sm text-gray-400">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          Dashboard Overview
+        </h1>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Welcome back! Here is a summary of your startup's hiring progress.
         </p>
       </div>
@@ -103,13 +105,15 @@ export default function FounderDashboardOverview() {
           return (
             <div
               key={index}
-              className={`flex items-center justify-between rounded-xl border ${card.borderColor} bg-[#121824] p-6 transition duration-200 hover:scale-[1.01]`}
+              className={`flex items-center justify-between rounded-xl border ${card.borderColor} bg-white p-6 shadow-sm transition duration-200 hover:scale-[1.01] dark:bg-slate-900`}
             >
               <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-400">
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
                   {card.title}
                 </p>
-                <h3 className="text-3xl font-bold text-white">{card.value}</h3>
+                <h3 className="text-3xl font-bold text-slate-900 dark:text-white">
+                  {card.value}
+                </h3>
               </div>
 
               <div
@@ -123,18 +127,18 @@ export default function FounderDashboardOverview() {
       </div>
 
       {/* Quick Summary Card */}
-      <div className="rounded-xl border border-white/10 bg-[#121824] p-6">
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
             <FiTrendingUp size={20} />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
               Recruitment Metrics Summary
             </h2>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               Conversion rate:{" "}
-              <span className="font-medium text-white">
+              <span className="font-semibold text-slate-900 dark:text-white">
                 {stats.totalApplications > 0
                   ? ((stats.acceptedMembers / stats.totalApplications) * 100).toFixed(1)
                   : 0}

@@ -7,10 +7,11 @@ const baseUrl =
 // =====================================================
 // GET REQUEST
 // =====================================================
-export const serverFetch = async (path) => {
+export const serverFetch = async (path, options = {}) => {
   try {
     const res = await fetch(`${baseUrl}${path}`, {
       cache: "no-store",
+      ...options,
     });
 
     const contentType = res.headers.get("content-type");
@@ -44,13 +45,15 @@ export const serverFetch = async (path) => {
 export const serverMutation = async (
   path,
   method = "POST",
-  data = null
+  data = null,
+  customHeaders = {}
 ) => {
   try {
     const options = {
       method,
       headers: {
         "Content-Type": "application/json",
+        ...customHeaders,
       },
     };
 
