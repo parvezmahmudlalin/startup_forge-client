@@ -2,18 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-// আপনার নিজস্ব Auth Context থাকলে সেটি ব্যবহার করুন (যেমন Firebase Auth বা NextAuth)
-// import { useAuth } from "@/context/AuthContext";
+
 
 export default function OpportunityDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
 
-  // ⚠️ আপনার সিস্টেমে লগইন করা ইউজারের ডাটা আনুন।
-  // ডেমো হিসেবে ধরে নিচ্ছি ইউজার লগইন আছে:
   const currentUser = {
     displayName: "Lalin",
-    email: "lalin@example.com" // আপনার অ্যাপের আসল লগইন করা ইউজারের ইমেইল আসবে
+    email: "lalin@example.com" 
   };
 
   const [opportunity, setOpportunity] = useState(null);

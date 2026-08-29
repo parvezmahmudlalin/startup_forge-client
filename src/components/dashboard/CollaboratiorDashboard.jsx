@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Briefcase, Send, CheckCircle2, Clock } from "lucide-react";
-import Link from "next/link";
+import { Send, Clock, CheckCircle2 } from "lucide-react";
 import { serverFetch } from "@/lib/api";
 
 export default function CollaboratorDashboard({ session }) {
   const [myApplications, setMyApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCollaboratorData = async () => {
@@ -21,8 +19,6 @@ export default function CollaboratorDashboard({ session }) {
         }
       } catch (err) {
         console.error("Error fetching collaborator data:", err);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -30,8 +26,12 @@ export default function CollaboratorDashboard({ session }) {
   }, [session]);
 
   const appliedCount = myApplications.length;
-  const acceptedCount = myApplications.filter(a => a.status === "Accepted").length;
-  const pendingCount = myApplications.filter(a => a.status === "Pending").length;
+  const acceptedCount = myApplications.filter(
+    (a) => a.status === "Accepted"
+  ).length;
+  const pendingCount = myApplications.filter(
+    (a) => a.status === "Pending"
+  ).length;
 
   return (
     <div className="space-y-8 p-6">
@@ -44,7 +44,6 @@ export default function CollaboratorDashboard({ session }) {
         </p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-default-200 bg-background p-5 shadow-sm dark:border-default-100 dark:bg-content1">
           <div className="flex items-center justify-between">
@@ -71,15 +70,19 @@ export default function CollaboratorDashboard({ session }) {
         </div>
       </div>
 
-      {/* My Applications List */}
       <div className="rounded-2xl border border-default-200 bg-background p-6 shadow-sm dark:border-default-100 dark:bg-content1">
         <h2 className="mb-4 text-lg font-bold">My Applications</h2>
         <div className="divide-y divide-default-100">
           {myApplications.length === 0 ? (
-            <p className="py-4 text-sm text-default-400">You haven't applied to any roles yet.</p>
+            <p className="py-4 text-sm text-default-400">
+              You haven't applied to any roles yet.
+            </p>
           ) : (
             myApplications.map((app) => (
-              <div key={app._id} className="flex items-center justify-between py-3">
+              <div
+                key={app._id}
+                className="flex items-center justify-between py-3"
+              >
                 <div>
                   <p className="font-semibold text-foreground">
                     {app.opportunity_details?.role_title || "Role"}
@@ -88,10 +91,15 @@ export default function CollaboratorDashboard({ session }) {
                     Startup: {app.startup_details?.startup_name || "N/A"}
                   </p>
                 </div>
-                <span className={`rounded-full px-3 py-1 text-xs font-medium ${
-                  app.status === "Accepted" ? "bg-success/10 text-success" :
-                  app.status === "Rejected" ? "bg-danger/10 text-danger" : "bg-warning/10 text-warning"
-                }`}>
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${
+                    app.status === "Accepted"
+                      ? "bg-success/10 text-success"
+                      : app.status === "Rejected"
+                      ? "bg-danger/10 text-danger"
+                      : "bg-warning/10 text-warning"
+                  }`}
+                >
                   {app.status || "Pending"}
                 </span>
               </div>

@@ -2,169 +2,306 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-// আপনার Auth Context ইম্পোর্ট করুন (যেমন Firebase Auth বা NextAuth)
-// import { useAuth } from "@/context/AuthContext";
+
+import { authClient } from "@/lib/auth-client";
+import { serverFetch } from "@/lib/api";
 
 export default function CollaboratorDashboard() {
-  // ⚠️ আপনার আসল Auth স্টেট ব্যবহার করবেন:
-  // const { user } = useAuth();
-  const currentUser = {
-    displayName: "Lalin",
-    email: "lalin@example.com", // ফর্ম এ যে ইমেইল দিয়ে সাবমিট করা হয়েছে
-  };
+  const { data: session, isPending } =
+    authClient.useSession();
 
-  const [applications, setApplications] = useState([]);
-  const [filteredApps, setFilteredApps] = useState([]);
-  const [activeTab, setActiveTab] = useState("All");
-  const [loading, setLoading] = useState(true);
+  const email = session?.user?.email;
+
+  const [applications, setApplications] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
 
   useEffect(() => {
-    if (currentUser?.email) {
-      fetchMyApplications(currentUser.email);
+    if (!isPending && email) {
+      fetchApplications();
     }
-  }, [currentUser?.email]);
+  }, [email, isPending]);
 
-  const fetchMyApplications = async (email) => {
+  const fetchApplications = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/my-applications?email=${email}`);
-      const data = await res.json();
-      
-      if (Array.isArray(data)) {
-        setApplications(data);
-        setFilteredApps(data);
-      } else {
-        setApplications([]);
-        setFilteredApps([]);
-      }
+
+      const data = await serverFetch(
+        `/api/my-applications?email=${encodeURIComponent(
+          email
+        )}`
+      );
+
+      setApplications(
+        Array.isArray(data) ? data : []
+      );
     } catch (error) {
-      console.error("Failed to fetch applications:", error);
+      console.error(
+        "Failed to fetch applications:",
+        error
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTabChange = (status) => {
-    setActiveTab(status);
-    if (status === "All") {
-      setFilteredApps(applications);
-    } else {
-      const filtered = applications.filter(
-        (app) => app.status?.toLowerCase() === status.toLowerCase()
-      );
-      setFilteredApps(filtered);
-    }
-  };
+  const pendingCount =
+    applications.filter(
+      (a) =>
+        a.status?.toLowerCase() === "pending"
+    ).length;
 
-  // স্ট্যাটাস কার্ডের কাউন্ট হিসাব করা
-  const pendingCount = applications.filter((a) => a.status?.toLowerCase() === "pending").length;
-  const acceptedCount = applications.filter((a) => a.status?.toLowerCase() === "accepted").length;
-  const rejectedCount = applications.filter((a) => a.status?.toLowerCase() === "rejected").length;
+  const acceptedCount =
+    applications.filter(
+      (a) =>
+        a.status?.toLowerCase() === "accepted"
+    ).length;
+
+  const rejectedCount =
+    applications.filter(
+      (a) =>
+        a.status?.toLowerCase() === "rejected"
+    ).length;
+
+  if (isPending) {
+    return (
+      <div className="p-8">
+        Loading dashboard...
+      </div>
+    );
+  }
+
+  if (!email) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-xl font-bold">
+          Please login first
+        </h2>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">Collaborator Dashboard</h1>
-          <p className="text-gray-500">Track your startup applications and opportunity updates.</p>
-        </div>
-        <Link
-          href="/opportunities"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition"
-        >
-          🔍 Explore Opportunities
-        </Link>
-      </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 sm:p-8">
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">TOTAL APPLIED</p>
-          <h2 className="text-3xl font-bold text-gray-800">{applications.length}</h2>
-        </div>
-        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-          <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-1">PENDING</p>
-          <h2 className="text-3xl font-bold text-amber-500">{pendingCount}</h2>
-        </div>
-        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-          <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1">ACCEPTED</p>
-          <h2 className="text-3xl font-bold text-emerald-500">{acceptedCount}</h2>
-        </div>
-        <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-          <p className="text-xs font-semibold text-red-600 uppercase tracking-wider mb-1">REJECTED</p>
-          <h2 className="text-3xl font-bold text-red-500">{rejectedCount}</h2>
-        </div>
-      </div>
+      <div className="max-w-6xl mx-auto">
 
-      {/* Filter Tabs */}
-      <div className="flex gap-2 mb-6">
-        {["All", "Pending", "Accepted", "Rejected"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => handleTabChange(tab)}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${
-              activeTab === tab
-                ? "bg-blue-600 text-white"
-                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
-            }`}
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Collaborator Dashboard
+            </h1>
+
+            <p className="mt-2 text-gray-500">
+              Track your startup applications and updates.
+            </p>
+          </div>
+
+          <Link
+            href="/opportunities"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl text-sm font-semibold text-center"
           >
-            {tab}
-          </button>
-        ))}
-      </div>
+            🔍 Explore Opportunities
+          </Link>
 
-      {/* Content Container */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 min-h-[300px]">
-        {loading ? (
-          <div className="flex justify-center items-center h-48 text-gray-400">Loading applications...</div>
-        ) : filteredApps.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="bg-gray-100 p-4 rounded-full mb-3 text-gray-400">💼</div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-1">No Applications Found</h3>
-            <p className="text-sm text-gray-500">You haven't applied to any opportunities yet.</p>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+
+          <StatCard
+            label="Total Applied"
+            value={applications.length}
+          />
+
+          <StatCard
+            label="Pending"
+            value={pendingCount}
+            type="pending"
+          />
+
+          <StatCard
+            label="Accepted"
+            value={acceptedCount}
+            type="accepted"
+          />
+
+          <StatCard
+            label="Rejected"
+            value={rejectedCount}
+            type="rejected"
+          />
+
+        </div>
+
+        {/* Recent Applications */}
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl">
+
+          <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                Recent Applications
+              </h2>
+
+              <p className="text-sm text-gray-500 mt-1">
+                Latest application activity
+              </p>
+            </div>
+
+            <Link
+              href="/dashboard/collaborator/applications"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              View All
+            </Link>
+
           </div>
-        ) : (
-          <div className="divide-y divide-gray-100">
-            {filteredApps.map((app) => (
-              <div key={app._id} className="py-4 flex items-center justify-between">
-                <div>
-                  <h4 className="font-semibold text-gray-800 text-lg">
-                    {app.opportunity_details?.role_title || "Role Unavailable"}
-                  </h4>
-                  <p className="text-sm text-gray-500">
-                    Startup: {app.startup_details?.startup_name || "N/A"} • Applied on:{" "}
-                    {new Date(app.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      app.status === "Accepted"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : app.status === "Rejected"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-amber-100 text-amber-700"
-                    }`}
-                  >
-                    {app.status || "Pending"}
-                  </span>
-                  {app.resume_link && (
-                    <a
-                      href={app.resume_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      View Resume
-                    </a>
-                  )}
-                </div>
+
+          {loading ? (
+            <div className="p-10 text-center text-gray-500">
+              Loading...
+            </div>
+          ) : applications.length === 0 ? (
+            <div className="p-12 text-center">
+
+              <div className="text-5xl mb-4">
+                💼
               </div>
-            ))}
-          </div>
-        )}
+
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                No Applications Yet
+              </h3>
+
+              <p className="text-sm text-gray-500 mt-2">
+                Explore opportunities and apply to join a startup team.
+              </p>
+
+              <Link
+                href="/opportunities"
+                className="inline-block mt-5 bg-blue-600 text-white px-5 py-2.5 rounded-lg"
+              >
+                Explore Opportunities
+              </Link>
+
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+
+              {applications
+                .slice(0, 5)
+                .map((app) => (
+
+                  <div
+                    key={app._id}
+                    className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+                  >
+
+                    <div>
+
+                      <h3 className="font-semibold text-gray-900 dark:text-white">
+                        {app
+                          .opportunity_details
+                          ?.role_title ||
+                          "Role Unavailable"}
+                      </h3>
+
+                      <p className="text-sm text-gray-500 mt-1">
+                        {app
+                          .startup_details
+                          ?.startup_name ||
+                          "Startup"}
+                      </p>
+
+                      <p className="text-xs text-gray-400 mt-1">
+                        {app.createdAt
+                          ? new Date(
+                              app.createdAt
+                            ).toLocaleDateString()
+                          : ""}
+                      </p>
+
+                    </div>
+
+                    <StatusBadge
+                      status={
+                        app.status ||
+                        "Pending"
+                      }
+                    />
+
+                  </div>
+
+                ))}
+
+            </div>
+          )}
+
+        </div>
       </div>
     </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  type,
+}) {
+  const classes = {
+    pending:
+      "text-amber-500",
+    accepted:
+      "text-green-500",
+    rejected:
+      "text-red-500",
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5">
+      <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">
+        {label}
+      </p>
+
+      <h2
+        className={`text-3xl font-bold mt-2 ${
+          classes[type] ||
+          "text-gray-900 dark:text-white"
+        }`}
+      >
+        {value}
+      </h2>
+    </div>
+  );
+}
+
+function StatusBadge({ status }) {
+  const normalized =
+    status.toLowerCase();
+
+  if (normalized === "accepted") {
+    return (
+      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+        ✓ Accepted
+      </span>
+    );
+  }
+
+  if (normalized === "rejected") {
+    return (
+      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+        ✕ Rejected
+      </span>
+    );
+  }
+
+  return (
+    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+      ⏳ Pending
+    </span>
   );
 }

@@ -69,7 +69,7 @@ export default function OpportunitiesPage() {
                 ))}
               </div>
               <Link
-                href={`/dashboard/collaborator/opportunities/${item._id}`}
+                href={`/opportunities/${item._id}`}
                 className="inline-block bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
               >
                 View Details
