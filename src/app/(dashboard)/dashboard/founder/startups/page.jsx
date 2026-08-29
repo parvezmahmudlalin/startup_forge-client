@@ -12,7 +12,6 @@ import { serverFetch } from "@/lib/api";
 export default function MyStartups() {
   const { data: session, isPending: authLoading } = authClient.useSession();
 
-  // 1. Single Object-এর বদলে Array/List স্টেট
   const [startups, setStartups] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +29,6 @@ export default function MyStartups() {
         )}`
       )
         .then((data) => {
-          // 2. ব্যাকএন্ড থেকে array রিটার্ন করলে তা সেট করা
           setStartups(Array.isArray(data) ? data : []);
         })
         .catch((error) => {
@@ -73,7 +71,7 @@ export default function MyStartups() {
 
           <Link
             href="/login"
-            className="mt-5 inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-primary/90"
+            className="mt-5 inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
           >
             Login
           </Link>
@@ -99,12 +97,12 @@ export default function MyStartups() {
           </p>
         </div>
 
-        {/* 3. Create Startup Button সবসময় থাকবে যাতে নতুন স্টার্টআপ অ্যাড করা যায় */}
+        {/* Create Startup Button */}
         <Link
           href="/dashboard/founder/startups/create-startup"
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
         >
-          <CirclePlus className="h-4 w-4" />
+          <CirclePlus className="h-4 w-4 text-white" />
           Create Startup
         </Link>
       </div>
@@ -115,7 +113,6 @@ export default function MyStartups() {
 
       {startups.length > 0 ? (
         <div className="grid grid-cols-1 gap-6">
-          {/* 4. .map() চালিয়ে প্রতিটি স্টার্টআপ কার্ড রেন্ডার */}
           {startups.map((item) => (
             <Card
               key={item._id}
@@ -177,10 +174,10 @@ export default function MyStartups() {
                   </div>
                 </div>
 
-                {/* DYNAMIC MANAGE STARTUP LINK ([id] পেজে পাঠাবে) */}
+                {/* DYNAMIC MANAGE STARTUP LINK */}
                 <Link
                   href={`/dashboard/founder/startups/${item._id}`}
-                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white"
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                 >
                   <Pencil className="h-4 w-4" />
                   Manage Startup
@@ -211,9 +208,9 @@ export default function MyStartups() {
 
           <Link
             href="/dashboard/founder/startups/create-startup"
-            className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90"
+            className="mt-6 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
           >
-            <CirclePlus className="h-4 w-4" />
+            <CirclePlus className="h-4 w-4 text-white" />
             Create Startup
           </Link>
         </Card>

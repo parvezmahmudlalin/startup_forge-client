@@ -1,26 +1,22 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Button, Spinner } from "@heroui/react";
-import {
-  Briefcase,
-  Code,
-  Laptop,
-  Clock,
-  Calendar,
-  Rocket,
-  ArrowLeft,
-  Building2,
-  ChevronDown,
-} from "lucide-react";
+import { Button, Spinner } from "@heroui/react";
+import { X } from "lucide-react";
 
-import FormField from "@/components/dashboard/founder/FormField";
 import { serverFetch, serverMutation } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
 
 const WORK_TYPES = ["Remote", "On-site", "Hybrid"];
-const COMMITMENT_LEVELS = ["Full-time", "Part-time", "Contract", "Internship"];
+
+const COMMITMENT_LEVELS = [
+  "Full-time",
+  "Part-time",
+  "Contract",
+  "Internship",
+];
 
 const INITIAL_FORM_DATA = {
   startupId: "",
@@ -31,9 +27,11 @@ const INITIAL_FORM_DATA = {
   deadline: "",
 };
 
-export default function AddOpportunityPage() {
+export default function AddOpportunityModal({ isOpen = true, onClose }) {
   const router = useRouter();
-  const { data: session, isPending: authLoading } = authClient.useSession();
+
+  const { data: session, isPending: authLoading } =
+    authClient.useSession();
 
   const [startups, setStartups] = useState([]);
   const [fetchingStartups, setFetchingStartups] = useState(true);
@@ -42,16 +40,41 @@ export default function AddOpportunityPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Fetch Founder Startups
+  // =====================================================
+  // CLOSE MODAL
+  // =====================================================
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      router.back();
+    }
+  };
+
+  // =====================================================
+  // FETCH FOUNDER STARTUPS
+  // =====================================================
   useEffect(() => {
-    if (!session?.user?.email) return;
+    if (authLoading) return;
+
+    if (!session?.user?.email) {
+      setFetchingStartups(false);
+      return;
+    }
 
     const fetchStartups = async () => {
       try {
         setFetchingStartups(true);
+        setError("");
+
         const email = encodeURIComponent(session.user.email);
-        const data = await serverFetch(`/api/founder/startups?email=${email}`);
+
+        const data = await serverFetch(
+          `/api/founder/startup?email=${email}`
+        );
+
         const fetchedStartups = Array.isArray(data) ? data : [];
+
         setStartups(fetchedStartups);
 
         if (fetchedStartups.length > 0) {
@@ -62,36 +85,78 @@ export default function AddOpportunityPage() {
         }
       } catch (err) {
         console.error("Failed to fetch startups:", err);
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load your startups."
+        );
       } finally {
         setFetchingStartups(false);
       }
     };
 
     fetchStartups();
-  }, [session?.user?.email]);
+  }, [session?.user?.email, authLoading]);
 
+  // =====================================================
+  // HANDLE INPUT CHANGE
+  // =====================================================
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
+  // =====================================================
+  // VALIDATE FORM
+  // =====================================================
   const validateForm = () => {
-    if (!session?.user?.email)
+    if (!session?.user?.email) {
       return "User session not found. Please login again.";
-    if (!formData.startupId) return "Please select a startup.";
-    if (!formData.roleTitle.trim()) return "Please enter the role title.";
-    if (!formData.requiredSkills.trim()) return "Please enter required skills.";
-    if (!formData.workType) return "Please select a work type.";
-    if (!formData.commitmentLevel) return "Please select a commitment level.";
-    if (!formData.deadline) return "Please select a deadline date.";
+    }
+
+    if (!formData.startupId) {
+      return "Please select a startup.";
+    }
+
+    if (!formData.roleTitle.trim()) {
+      return "Please enter the role title.";
+    }
+
+    if (!formData.requiredSkills.trim()) {
+      return "Please enter required skills.";
+    }
+
+    if (!formData.workType) {
+      return "Please select a work type.";
+    }
+
+    if (!formData.commitmentLevel) {
+      return "Please select a commitment level.";
+    }
+
+    if (!formData.deadline) {
+      return "Please select a deadline date.";
+    }
+
     return null;
   };
 
+  // =====================================================
+  // SUBMIT OPPORTUNITY
+  // =====================================================
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     const validationError = validateForm();
-    if (validationError) return setError(validationError);
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
     setLoading(true);
 
@@ -111,208 +176,259 @@ export default function AddOpportunityPage() {
         founder_email: session.user.email,
       };
 
-      await serverMutation("/api/founder/opportunities", "POST", payload);
+      // Create Opportunity
+      const response = await serverMutation(
+        "/api/founder/opportunities",
+        "POST",
+        payload
+      );
 
-      router.push("/dashboard/founder/opportunities");
+      console.log("Opportunity created:", response);
+
+      // =================================================
+      // SUCCESS → MANAGE OPPORTUNITY PAGE
+      // =================================================
+
+      if (onClose) {
+        onClose();
+      }
+
+      router.push("/dashboard/founder/opportunities/manage-opportunity");
       router.refresh();
+
     } catch (err) {
       console.error("Add opportunity error:", err);
+
       setError(
-        err instanceof Error ? err.message : "Failed to add opportunity."
+        err instanceof Error
+          ? err.message
+          : "Failed to add opportunity."
       );
     } finally {
       setLoading(false);
     }
   };
 
-  if (authLoading || fetchingStartups) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center bg-transparent">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
-  if (!session?.user?.email) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center bg-transparent">
-        <p className="text-slate-700 dark:text-slate-300">Please login first.</p>
-      </div>
-    );
-  }
+  // =====================================================
+  // MODAL CLOSED
+  // =====================================================
+  if (!isOpen) return null;
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 dark:bg-slate-950 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl">
-        {/* Back Button */}
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-700 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-        >
-          <ArrowLeft size={17} /> Back
-        </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+      <div className="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl">
 
-        <Card className="border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="p-6 sm:p-8">
-            {/* Header */}
-            <div className="mb-8 flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-100 font-semibold text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
-                <Briefcase size={23} />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                  Add New Opportunity
-                </h2>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                  Post a new role for your startup team.
-                </p>
-              </div>
+        {/* Header */}
+        <div className="relative border-b border-slate-100 p-6 pb-4">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="absolute right-5 top-5 rounded-lg text-slate-400 hover:text-slate-600"
+          >
+            <X size={20} />
+          </button>
+
+          <h2 className="text-xl font-bold text-slate-900">
+            Create Opportunity
+          </h2>
+
+          <p className="mt-1 text-sm text-slate-600">
+            Create a new opportunity for your startup.
+          </p>
+        </div>
+
+        {/* Body */}
+        <div className="max-h-[75vh] overflow-y-auto p-6">
+
+          {authLoading || fetchingStartups ? (
+            <div className="flex justify-center py-12">
+              <Spinner size="lg" />
             </div>
+          ) : !session?.user?.email ? (
+            <div className="py-8 text-center text-slate-600">
+              Please login first to add opportunities.
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Error Message */}
+              {/* Error */}
               {error && (
-                <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
-                  <span>⚠️</span>
-                  <p>{error}</p>
+                <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                  {error}
                 </div>
               )}
 
-              {/* Startup Selector */}
-              <FormField label="Select Startup" required icon={Building2}>
-                <div className="relative w-full">
-                  <select
-                    value={formData.startupId}
-                    onChange={(e) => handleChange("startupId", e.target.value)}
-                    className="h-14 w-full appearance-none rounded-xl border border-slate-300 bg-slate-50 pl-11 pr-10 text-sm font-medium text-slate-900 outline-none transition hover:border-slate-400 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:hover:border-slate-700 dark:focus:border-blue-500"
-                  >
-                    {startups.length === 0 ? (
-                      <option value="" disabled className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">
-                        No startup found. Please create a startup first.
+              {/* Startup */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-800">
+                  Select Startup{" "}
+                  <span className="text-rose-500">*</span>
+                </label>
+
+                <select
+                  value={formData.startupId}
+                  onChange={(e) =>
+                    handleChange("startupId", e.target.value)
+                  }
+                  disabled={startups.length === 0}
+                  className="w-full rounded-xl bg-[#090d16] px-4 py-3 text-sm font-medium text-white outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                >
+                  {startups.length === 0 ? (
+                    <option value="" disabled>
+                      No startup found. Please create one first.
+                    </option>
+                  ) : (
+                    startups.map((startup) => (
+                      <option
+                        key={startup._id}
+                        value={startup._id}
+                      >
+                        {startup.startup_name || startup.name}
                       </option>
-                    ) : (
-                      startups.map((s) => (
-                        <option
-                          key={s._id}
-                          value={s._id}
-                          className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white"
-                        >
-                          {s.startup_name || s.name}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                  <ChevronDown size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
-                </div>
-              </FormField>
+                    ))
+                  )}
+                </select>
+              </div>
 
-              {/* Role Title */}
-              <FormField label="Role Title" required icon={Briefcase}>
+              {/* Role */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-800">
+                  Role Title{" "}
+                  <span className="text-rose-500">*</span>
+                </label>
+
                 <input
                   type="text"
-                  placeholder="e.g. Senior Frontend Developer"
+                  placeholder="e.g. Senior React Developer"
                   value={formData.roleTitle}
-                  onChange={(e) => handleChange("roleTitle", e.target.value)}
-                  className="h-14 w-full rounded-xl border border-slate-300 bg-slate-50 pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:hover:border-slate-700 dark:focus:border-blue-500"
+                  onChange={(e) =>
+                    handleChange("roleTitle", e.target.value)
+                  }
+                  className="w-full rounded-xl bg-[#090d16] px-4 py-3 text-sm text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500"
                 />
-              </FormField>
+              </div>
 
-              {/* Required Skills */}
-              <FormField
-                label="Required Skills"
-                required
-                icon={Code}
-                note="Separate skills with commas (e.g. React, Next.js, Tailwind CSS)"
-              >
+              {/* Skills */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-800">
+                  Required Skills{" "}
+                  <span className="text-rose-500">*</span>
+                </label>
+
                 <input
                   type="text"
-                  placeholder="e.g. React, Node.js, TypeScript"
+                  placeholder="React, Node.js, MongoDB"
                   value={formData.requiredSkills}
                   onChange={(e) =>
-                    handleChange("requiredSkills", e.target.value)
+                    handleChange(
+                      "requiredSkills",
+                      e.target.value
+                    )
                   }
-                  className="h-14 w-full rounded-xl border border-slate-300 bg-slate-50 pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:hover:border-slate-700 dark:focus:border-blue-500"
+                  className="w-full rounded-xl bg-[#090d16] px-4 py-3 text-sm text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500"
                 />
-              </FormField>
 
-              {/* Work Type & Commitment Level */}
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                {/* Work Type */}
-                <FormField label="Work Type" required icon={Laptop}>
-                  <div className="relative w-full">
-                    <select
-                      value={formData.workType}
-                      onChange={(e) => handleChange("workType", e.target.value)}
-                      className="h-14 w-full appearance-none rounded-xl border border-slate-300 bg-slate-50 pl-11 pr-10 text-sm font-medium text-slate-900 outline-none transition hover:border-slate-400 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:hover:border-slate-700 dark:focus:border-blue-500"
-                    >
-                      {WORK_TYPES.map((type) => (
-                        <option
-                          key={type}
-                          value={type}
-                          className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white"
-                        >
-                          {type}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
-                  </div>
-                </FormField>
+                <p className="text-[11px] text-slate-500">
+                  Separate skills using commas.
+                </p>
+              </div>
 
-                {/* Commitment Level */}
-                <FormField label="Commitment Level" required icon={Clock}>
-                  <div className="relative w-full">
-                    <select
-                      value={formData.commitmentLevel}
-                      onChange={(e) =>
-                        handleChange("commitmentLevel", e.target.value)
-                      }
-                      className="h-14 w-full appearance-none rounded-xl border border-slate-300 bg-slate-50 pl-11 pr-10 text-sm font-medium text-slate-900 outline-none transition hover:border-slate-400 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:hover:border-slate-700 dark:focus:border-blue-500"
-                    >
-                      {COMMITMENT_LEVELS.map((level) => (
-                        <option
-                          key={level}
-                          value={level}
-                          className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white"
-                        >
-                          {level}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400" />
-                  </div>
-                </FormField>
+              {/* Work Type */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-800">
+                  Work Type
+                </label>
+
+                <select
+                  value={formData.workType}
+                  onChange={(e) =>
+                    handleChange("workType", e.target.value)
+                  }
+                  className="w-full rounded-xl bg-[#090d16] px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {WORK_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Commitment */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-800">
+                  Commitment
+                </label>
+
+                <select
+                  value={formData.commitmentLevel}
+                  onChange={(e) =>
+                    handleChange(
+                      "commitmentLevel",
+                      e.target.value
+                    )
+                  }
+                  className="w-full rounded-xl bg-[#090d16] px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {COMMITMENT_LEVELS.map((level) => (
+                    <option key={level} value={level}>
+                      {level}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Deadline */}
-              <FormField label="Application Deadline" required icon={Calendar}>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-800">
+                  Deadline{" "}
+                  <span className="text-rose-500">*</span>
+                </label>
+
                 <input
                   type="date"
                   value={formData.deadline}
-                  onChange={(e) => handleChange("deadline", e.target.value)}
-                  className="h-14 w-full rounded-xl border border-slate-300 bg-slate-50 pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition hover:border-slate-400 focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-600/20 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:scheme-dark dark:hover:border-slate-700 dark:focus:border-blue-500"
+                  onChange={(e) =>
+                    handleChange("deadline", e.target.value)
+                  }
+                  className="w-full rounded-xl bg-[#090d16] px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500 [color-scheme:dark]"
                 />
-              </FormField>
+              </div>
 
-              {/* Submit Button */}
-              <div className="pt-2">
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  disabled={loading}
+                  className="rounded-xl bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
                 <Button
                   type="submit"
                   color="primary"
-                  size="lg"
                   isLoading={loading}
-                  isDisabled={loading || !session?.user?.email || startups.length === 0}
-                  className="flex w-full items-center justify-center gap-2 font-semibold text-white shadow-lg shadow-blue-500/20"
+                  isDisabled={
+                    loading ||
+                    !session?.user?.email ||
+                    startups.length === 0
+                  }
+                  className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
                 >
-                  {!loading && <Rocket size={18} />}
-                  {loading ? "Posting Opportunity..." : "Post Opportunity"}
+                  {loading
+                    ? "Creating..."
+                    : "Create Opportunity"}
                 </Button>
+
               </div>
             </form>
-          </div>
-        </Card>
+          )}
+        </div>
       </div>
-    </main>
+    </div>
   );
 }
+

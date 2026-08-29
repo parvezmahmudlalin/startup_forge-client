@@ -9,19 +9,19 @@ import {
 } from "react-icons/fa";
 
 export default async function OpportunitiesDetailsPage({ params }) {
-  // Next.js 15+ এ params await করতে হয়
+  
   const { id } = await params;
   console.log("Opportunity ID:", id);
 
-  // Backend থেকে নির্দিষ্ট Opportunity ফেচ করা
+  
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_SERVER_URL}/opportunities/${id}`,
     {
-      cache: "no-store", // সবসময় ফ্রেশ ডেটা পাওয়ার জন্য
+      cache: "no-store",
     }
   );
 
-  // যদি ডাটা না পাওয়া যায়
+  
   if (!res.ok) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">

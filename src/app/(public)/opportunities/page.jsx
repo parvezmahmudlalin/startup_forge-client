@@ -55,98 +55,112 @@ export default function OpportunitiesPage() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Explore Opportunities</h1>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+      <div className="p-6 max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
+          Explore Opportunities
+        </h1>
 
-      {/* Filter Options */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Search title or skills..."
-          className="p-3 border border-gray-300 rounded-lg flex-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select
-          className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-          value={workType}
-          onChange={(e) => setWorkType(e.target.value)}
-        >
-          <option value="All">All Types</option>
-          <option value="Remote">Remote</option>
-          <option value="On-site">On-site</option>
-          <option value="Hybrid">Hybrid</option>
-        </select>
-      </div>
-
-      {/* Content Area */}
-      {loading ? (
-        <div className="text-center py-12 text-gray-500 font-medium">
-          Loading opportunities...
+        {/* Filter Options */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <input
+            type="text"
+            placeholder="Search title or skills..."
+            className="p-3 border border-gray-300 dark:border-slate-800 rounded-lg flex-1 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <select
+            className="p-3 border border-gray-300 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 cursor-pointer transition-colors"
+            value={workType}
+            onChange={(e) => setWorkType(e.target.value)}
+          >
+            <option value="All" className="bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100">
+              All Types
+            </option>
+            <option value="Remote" className="bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100">
+              Remote
+            </option>
+            <option value="On-site" className="bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100">
+              On-site
+            </option>
+            <option value="Hybrid" className="bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100">
+              Hybrid
+            </option>
+          </select>
         </div>
-      ) : opportunities.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200 text-gray-500">
-          No opportunities found matching your criteria.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {opportunities.map((item) => {
-            const skills = getSkillsArray(item.required_skills);
-            const startupName = getStartupName(item);
 
-            return (
-              <div
-                key={item._id}
-                className="border border-gray-200 p-5 rounded-lg shadow-sm bg-white flex flex-col justify-between hover:shadow-md transition"
-              >
-                <div>
-                  <div className="flex justify-between items-start mb-2">
-                    <h2 className="text-xl font-semibold text-gray-800 line-clamp-1">
-                      {item.role_title || "Untitled Role"}
-                    </h2>
-                    {item.work_type && (
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-medium">
-                        {item.work_type}
-                      </span>
-                    )}
-                  </div>
+        {/* Content Area */}
+        {loading ? (
+          <div className="text-center py-12 text-gray-500 dark:text-slate-400 font-medium">
+            Loading opportunities...
+          </div>
+        ) : opportunities.length === 0 ? (
+          <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400">
+            No opportunities found matching your criteria.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {opportunities.map((item) => {
+              const skills = getSkillsArray(item.required_skills);
+              const startupName = getStartupName(item);
 
-                  <p className="text-sm text-gray-600 mb-4">
-                    Startup:{" "}
-                    <span className="font-semibold text-gray-800">
-                      {startupName}
-                    </span>
-                  </p>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {skills.length > 0 ? (
-                      skills.map((skill, index) => (
-                        <span
-                          key={index}
-                          className="bg-blue-50 text-blue-700 border border-blue-200 text-xs px-2.5 py-1 rounded-md font-medium"
-                        >
-                          {skill}
+              return (
+                <div
+                  key={item._id}
+                  className="border border-gray-200 dark:border-slate-800 p-5 rounded-lg shadow-sm bg-white dark:bg-slate-900 flex flex-col justify-between hover:shadow-md transition duration-300"
+                >
+                  <div>
+                    <div className="flex justify-between items-start mb-2 gap-2">
+                      <h2 className="text-xl font-semibold text-gray-800 dark:text-white line-clamp-1">
+                        {item.role_title || "Untitled Role"}
+                      </h2>
+                      {item.work_type && (
+                        <span className="text-xs bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-700 px-2 py-1 rounded font-medium shrink-0">
+                          {item.work_type}
                         </span>
-                      ))
-                    ) : (
-                      <span className="text-xs text-gray-400">No specific skills listed</span>
-                    )}
+                      )}
+                    </div>
+
+                    <p className="text-sm text-gray-600 dark:text-slate-400 mb-4">
+                      Startup:{" "}
+                      <span className="font-semibold text-gray-800 dark:text-slate-200">
+                        {startupName}
+                      </span>
+                    </p>
+
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {skills.length > 0 ? (
+                        skills.map((skill, index) => (
+                          <span
+                            key={index}
+                            className="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50 text-xs px-2.5 py-1 rounded-md font-medium"
+                          >
+                            {skill}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-400 dark:text-slate-500">
+                          No specific skills listed
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-gray-100 dark:border-slate-800/80 mt-2">
+                    <Link
+                      href={`/opportunities/${item._id}`}
+                      className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition"
+                    >
+                      View Details
+                    </Link>
                   </div>
                 </div>
-
-                <div className="pt-2 border-t border-gray-100 mt-2">
-                  <Link
-                    href={`/opportunities/${item._id}`}
-                    className="block w-full text-center bg-blue-600 text-white font-medium px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -41,13 +41,13 @@ export default function ApplicationsPage() {
     }
   }, [session?.user?.email]);
 
-  // Handle Accept / Reject Action
+  // Handle Accept / Reject Action (FIXED API URL & CALL)
   const handleStatusUpdate = async (id, newStatus) => {
     try {
       setUpdatingId(id);
 
-      await serverMutation("/api/founder/applications", "PATCH", {
-        applicationId: id,
+      // ✅ FIX: URL-এর সাথে `id` যোগ করা হয়েছে
+      await serverMutation(`/api/founder/applications/${id}`, "PATCH", {
         status: newStatus,
       });
 
@@ -88,7 +88,6 @@ export default function ApplicationsPage() {
     <div className="mx-auto max-w-6xl space-y-6 p-6">
       {/* Header */}
       <div>
-        {/* ✅ text-slate-900 (Light Mode) / dark:text-white (Dark Mode) */}
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           Applications
         </h1>

@@ -102,7 +102,7 @@ export default function ManageOpportunityPage() {
   if (!session?.user?.email) {
     return (
       <div className="flex min-h-[400px] items-center justify-center bg-transparent">
-        <p className="text-slate-600 dark:text-slate-400">Please login first.</p>
+        <p className="text-gray-600 dark:text-gray-400">Please login first.</p>
       </div>
     );
   }
@@ -112,10 +112,10 @@ export default function ManageOpportunityPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Manage Opportunities
           </h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
             Create, update, and manage opportunities for your startup.
           </p>
         </div>
@@ -132,50 +132,50 @@ export default function ManageOpportunityPage() {
 
       {/* Main Table / Loader */}
       {loading ? (
-        <div className="flex min-h-[300px] items-center justify-center rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex min-h-[300px] items-center justify-center rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
           <Spinner size="lg" />
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[750px]">
               {/* Table Header */}
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-800/60">
-                  <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-300">
+                <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/60">
+                  <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
                     Role Title
                   </th>
-                  <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-300">
+                  <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
                     Work Type
                   </th>
-                  <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-300">
+                  <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
                     Commitment
                   </th>
-                  <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-300">
+                  <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
                     Deadline
                   </th>
-                  <th className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-300">
+                  <th className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-wide text-gray-700 dark:text-gray-300">
                     Actions
                   </th>
                 </tr>
               </thead>
 
               {/* Table Body */}
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {opportunities.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-5 py-16 text-center">
                       <div className="flex flex-col items-center justify-center">
-                        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+                        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
                           <FiBriefcase
                             size={24}
-                            className="text-slate-500 dark:text-slate-400"
+                            className="text-gray-500 dark:text-gray-400"
                           />
                         </div>
-                        <p className="font-medium text-slate-800 dark:text-slate-200">
+                        <p className="font-medium text-gray-800 dark:text-gray-200">
                           No opportunities created yet.
                         </p>
-                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                           Create your first opportunity to start building your
                           team.
                         </p>
@@ -186,11 +186,11 @@ export default function ManageOpportunityPage() {
                   opportunities.map((item) => (
                     <tr
                       key={item._id}
-                      className="transition hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                      className="transition hover:bg-gray-50 dark:hover:bg-gray-800/50"
                     >
                       {/* Role Title */}
                       <td className="px-5 py-4">
-                        <p className="font-semibold text-slate-900 dark:text-white">
+                        <p className="font-semibold text-gray-900 dark:text-white">
                           {item.role_title || "Untitled Role"}
                         </p>
                       </td>
@@ -203,12 +203,12 @@ export default function ManageOpportunityPage() {
                       </td>
 
                       {/* Commitment */}
-                      <td className="px-5 py-4 text-sm text-slate-700 dark:text-slate-300">
+                      <td className="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
                         {item.commitment_level || "N/A"}
                       </td>
 
                       {/* Deadline */}
-                      <td className="px-5 py-4 text-sm text-slate-700 dark:text-slate-300">
+                      <td className="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
                         {item.deadline
                           ? new Date(item.deadline).toLocaleDateString("en-GB")
                           : "N/A"}
@@ -231,7 +231,7 @@ export default function ManageOpportunityPage() {
                           <button
                             type="button"
                             onClick={() => handleEdit(item)}
-                            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
                             title="Edit"
                           >
                             <FiEdit size={16} />

@@ -3,7 +3,7 @@
 import { Avatar, Button, Dropdown, Label, useTheme } from "@heroui/react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState, useEffect } from "react"; // 👈 ১. useEffect ইম্পোর্ট করা হলো
+import React, { useState, useEffect } from "react";
 import { BiLogOut } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 import { MdDashboard } from "react-icons/md";
@@ -18,16 +18,16 @@ const Navbar = () => {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-
- useEffect(() => {
-  const timer = setTimeout(() => setMounted(true), 0);
-  return () => clearTimeout(timer);
-}, []);
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
 
   const isLoggedIn = !!user;
+  const isFounder = user?.role?.toLowerCase() === "founder";
 
   const handleSignOut = async () => {
     await authClient.signOut();
@@ -74,20 +74,23 @@ const Navbar = () => {
                 Browse Startups
               </Link>
             </li>
-            <li>
-              <Link
-                href="/opportunities"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-indigo-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
-              >
-                Browse Opportunities
-              </Link>
-            </li>
+            
+            {/* Founder না হলে Browse Opportunities লিংক দেখাবে */}
+            {!isFounder && (
+              <li>
+                <Link
+                  href="/opportunities"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-indigo-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-indigo-400"
+                >
+                  Browse Opportunities
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
 
         {/* Right Side: Auth Buttons / Theme Toggle / User Profile */}
         <div className="hidden items-center gap-3 md:flex">
-          
           {mounted ? (
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -97,7 +100,7 @@ const Navbar = () => {
               {theme === "dark" ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
             </button>
           ) : (
-            <div className="h-10 w-10" /> 
+            <div className="h-10 w-10" />
           )}
 
           {isPending ? (
@@ -189,7 +192,6 @@ const Navbar = () => {
 
         {/* Mobile Toggle Button */}
         <div className="flex items-center gap-2 md:hidden">
-         
           {mounted ? (
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -238,15 +240,19 @@ const Navbar = () => {
                 Browse Startups
               </Link>
             </li>
-            <li>
-              <Link
-                href="/opportunities"
-                onClick={() => setIsMenuOpen(false)}
-                className="block rounded-lg px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 dark:text-gray-200 dark:hover:bg-gray-800"
-              >
-                Browse Opportunities
-              </Link>
-            </li>
+            
+            {/* Founder না হলে মোবাইল ড্রয়ারেও Browse Opportunities দেখাবে */}
+            {!isFounder && (
+              <li>
+                <Link
+                  href="/opportunities"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block rounded-lg px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 dark:text-gray-200 dark:hover:bg-gray-800"
+                >
+                  Browse Opportunities
+                </Link>
+              </li>
+            )}
 
             {isLoggedIn && (
               <>
