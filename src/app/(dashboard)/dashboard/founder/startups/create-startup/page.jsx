@@ -41,7 +41,7 @@ export default function CreateStartupForm() {
         founder_email: session.user.email,
       };
 
-      // ১. পেমেন্ট প্রয়োজন কি না চেক করা
+      // ১. পেমেন্ট প্রয়োজন কি না চেক করা
       const checkRes = await serverMutation(
         "/api/payment/create-checkout-session",
         "POST",
@@ -81,7 +81,7 @@ export default function CreateStartupForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 rounded-2xl border border-default-200 bg-content1 p-6 shadow-sm dark:border-default-100"
+      className="space-y-6 rounded-2xl border border-default-200 bg-background p-6 shadow-sm dark:border-default-100 dark:bg-content1"
     >
       <div>
         <label className="mb-2 block text-sm font-medium text-foreground">
@@ -94,7 +94,7 @@ export default function CreateStartupForm() {
           value={formData.startup_name}
           onChange={handleChange}
           placeholder="e.g. WaveEra"
-          className="w-full rounded-xl border border-default-200 bg-transparent px-4 py-2.5 text-sm outline-none focus:border-primary"
+          className="w-full rounded-xl border border-default-200 bg-content2 px-4 py-2.5 text-sm text-foreground placeholder:text-default-400 outline-none transition focus:border-primary dark:border-default-100"
         />
       </div>
 
@@ -109,7 +109,7 @@ export default function CreateStartupForm() {
           value={formData.industry}
           onChange={handleChange}
           placeholder="e.g. EdTech, FinTech, SaaS"
-          className="w-full rounded-xl border border-default-200 bg-transparent px-4 py-2.5 text-sm outline-none focus:border-primary"
+          className="w-full rounded-xl border border-default-200 bg-content2 px-4 py-2.5 text-sm text-foreground placeholder:text-default-400 outline-none transition focus:border-primary dark:border-default-100"
         />
       </div>
 
@@ -121,12 +121,12 @@ export default function CreateStartupForm() {
           name="funding_stage"
           value={formData.funding_stage}
           onChange={handleChange}
-          className="w-full rounded-xl border border-default-200 bg-transparent px-4 py-2.5 text-sm outline-none focus:border-primary"
+          className="w-full rounded-xl border border-default-200 bg-content2 px-4 py-2.5 text-sm text-foreground outline-none transition focus:border-primary dark:border-default-100"
         >
-          <option value="Idea">Idea</option>
-          <option value="Pre-seed">Pre-seed</option>
-          <option value="Seed">Seed</option>
-          <option value="Series A">Series A</option>
+          <option value="Idea" className="bg-background text-foreground">Idea</option>
+          <option value="Pre-seed" className="bg-background text-foreground">Pre-seed</option>
+          <option value="Seed" className="bg-background text-foreground">Seed</option>
+          <option value="Series A" className="bg-background text-foreground">Series A</option>
         </select>
       </div>
 
@@ -141,17 +141,17 @@ export default function CreateStartupForm() {
           value={formData.description}
           onChange={handleChange}
           placeholder="Describe your startup idea and goals..."
-          className="w-full rounded-xl border border-default-200 bg-transparent p-3 text-sm outline-none focus:border-primary"
+          className="w-full rounded-xl border border-default-200 bg-content2 p-3 text-sm text-foreground placeholder:text-default-400 outline-none transition focus:border-primary dark:border-default-100"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-semibold text-white shadow-md transition hover:opacity-90 disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-semibold text-primary-foreground shadow-md transition hover:opacity-90 active:scale-[0.99] disabled:opacity-50"
       >
         {loading ? (
-          <Spinner size="sm" color="white" />
+          <Spinner size="sm" color="current" />
         ) : (
           <>
             <Rocket size={18} /> Create Startup
