@@ -5,7 +5,8 @@ import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { serverMutation } from "@/lib/api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+// আপনার .env থেকে Port 5000 এর Server URL নেওয়া হচ্ছে
+const API_BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 const STARTUPS_PAGE_URL = "/dashboard/founder/startups";
 
 function PaymentSuccessContent() {
@@ -27,10 +28,15 @@ function PaymentSuccessContent() {
 
     const processPaymentAndCreateStartup = async () => {
       try {
-        // ১. Environment Variable ব্যবহার করে পেমেন্ট ভেরিফাই করা
+        // ১. Port 5000 (Backend Express/Node Server) এ verification request পাঠানো
         const res = await fetch(
           `${API_BASE_URL}/api/payment/verify-session?session_id=${sessionId}`
         );
+
+        if (!res.ok) {
+          throw new Error(`Server status: ${res.status}. Payment verification route missing or error.`);
+        }
+
         const data = await res.json();
 
         if (!data.success) {
@@ -42,32 +48,26 @@ function PaymentSuccessContent() {
         setPaymentData(data.payment);
         setStatusMessage("Payment verified! Creating your startup...");
 
-        // ২. LocalStorage থেকে পেন্ডিং ডাটা রিড করা
+        // ২. LocalStorage থেকে Pending Startup Data চেক ও সাবমিট
         const savedData = localStorage.getItem("pendingStartupData");
 
         if (savedData) {
           const payload = JSON.parse(savedData);
 
-          // ৩. ব্যাকএন্ডে Startup ডাটা সাবমিট করা
+          // backend API তে startup save করা
           await serverMutation("/api/founder/startup", "POST", payload);
 
-          // ৪. ডাটা সেভ হয়ে গেলে LocalStorage ক্লিয়ার করা
           localStorage.removeItem("pendingStartupData");
-
-          setStatusMessage("Startup created successfully! Redirecting...");
-
-          setTimeout(() => {
-            router.push(STARTUPS_PAGE_URL);
-          }, 2000);
-        } else {
-          setLoading(false);
-          setTimeout(() => {
-            router.push(STARTUPS_PAGE_URL);
-          }, 2500);
         }
+
+        setStatusMessage("Startup created successfully! Redirecting...");
+
+        setTimeout(() => {
+          router.push(STARTUPS_PAGE_URL);
+        }, 2000);
       } catch (err) {
         console.error("Verification error:", err);
-        setError("Something went wrong while completing your request.");
+        setError(err?.message || "Something went wrong while completing your request.");
         setLoading(false);
       }
     };
@@ -77,7 +77,7 @@ function PaymentSuccessContent() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 p-4">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 p-4">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent dark:border-blue-500"></div>
         <p className="text-lg font-medium text-slate-700 dark:text-slate-300">{statusMessage}</p>
       </div>
@@ -86,13 +86,13 @@ function PaymentSuccessContent() {
 
   if (error) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 p-4">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 p-4">
         <div className="rounded-2xl border border-rose-200 bg-white p-8 shadow-sm dark:border-rose-500/20 dark:bg-slate-900 max-w-md w-full">
           <h1 className="text-2xl font-bold text-rose-600 dark:text-rose-500">Verification Failed</h1>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{error}</p>
           <Link
             href={STARTUPS_PAGE_URL}
-            className="mt-6 inline-block rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-600 dark:hover:bg-blue-500"
+            className="mt-6 inline-block rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98]"
           >
             Go to Startups
           </Link>
@@ -102,7 +102,7 @@ function PaymentSuccessContent() {
   }
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center text-center bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200 p-4">
+    <div className="flex min-h-[60vh] flex-col items-center justify-center text-center bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 p-4">
       <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900 max-w-md w-full">
         <h1 className="text-3xl font-bold text-emerald-600 dark:text-emerald-500">Payment Successful!</h1>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Your startup has been created successfully.</p>
@@ -119,7 +119,7 @@ function PaymentSuccessContent() {
 
         <Link
           href={STARTUPS_PAGE_URL}
-          className="mt-6 inline-block w-full rounded-xl bg-blue-600 px-6 py-2.5 font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-600 dark:hover:bg-blue-500"
+          className="mt-6 inline-block w-full rounded-xl bg-blue-600 px-6 py-2.5 font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98]"
         >
           View All Startups
         </Link>
@@ -130,13 +130,7 @@ function PaymentSuccessContent() {
 
 export default function PaymentSuccessPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-[60vh] items-center justify-center bg-slate-50 dark:bg-slate-950">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent dark:border-blue-500" />
-        </div>
-      }
-    >
+    <Suspense fallback={<div className="flex min-h-[60vh] items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" /></div>}>
       <PaymentSuccessContent />
     </Suspense>
   );

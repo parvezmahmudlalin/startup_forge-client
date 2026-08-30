@@ -26,7 +26,6 @@ const Navbar = () => {
   const user = session?.user;
 
   const isLoggedIn = !!user;
-  const isFounder = user?.role?.toLowerCase() === "founder";
 
   const handleSignOut = async () => {
     try {
@@ -74,16 +73,14 @@ const Navbar = () => {
                 Browse Startups
               </Link>
             </li>
-            {!isFounder && (
-              <li>
-                <Link
-                  href="/opportunities"
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
-                >
-                  Browse Opportunities
-                </Link>
-              </li>
-            )}
+            <li>
+              <Link
+                href="/opportunities"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+              >
+                Browse Opportunities
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -232,17 +229,15 @@ const Navbar = () => {
               </Link>
             </li>
 
-            {!isFounder && (
-              <li>
-                <Link
-                  href="/opportunities"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block rounded-lg px-3 py-2 text-base font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 dark:text-slate-200 dark:hover:bg-slate-800"
-                >
-                  Browse Opportunities
-                </Link>
-              </li>
-            )}
+            <li>
+              <Link
+                href="/opportunities"
+                onClick={() => setIsMenuOpen(false)}
+                className="block rounded-lg px-3 py-2 text-base font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                Browse Opportunities
+              </Link>
+            </li>
 
             {isLoggedIn && (
               <>

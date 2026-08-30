@@ -209,10 +209,10 @@ export default function ManageStartupPage({ params }) {
   if (!session?.user) {
     return (
       <main className="flex min-h-[60vh] items-center justify-center p-6">
-        <Card className="p-8 text-center border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-lg">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Login Required</h2>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Please login to manage your startup.</p>
-          <Button color="primary" className="mt-5" onPress={() => router.push("/login")}>
+        <Card className="p-8 text-center border border-default-200 bg-content1 dark:border-default-100 shadow-lg">
+          <h2 className="text-xl font-bold text-foreground">Login Required</h2>
+          <p className="mt-2 text-sm text-default-500">Please login to manage your startup.</p>
+          <Button color="primary" className="mt-5 font-semibold" onPress={() => router.push("/login")}>
             Go to Login
           </Button>
         </Card>
@@ -221,150 +221,154 @@ export default function ManageStartupPage({ params }) {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100 p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-4xl space-y-6">
-        
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Manage / Edit Startup</h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Update your startup profile information</p>
-          </div>
-          
-          <Button
-            color="danger"
-            variant="flat"
-            onPress={() => setShowDeleteModal(true)}
-            startContent={<Trash2 size={16} />}
-            className="w-fit"
-          >
-            Delete Startup
-          </Button>
+    <div className="w-full space-y-6">
+      
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Manage / Edit Startup
+          </h1>
+          <p className="text-sm text-default-500 mt-1">
+            Update your startup profile information
+          </p>
         </div>
 
-        {/* Form Card */}
-        <Card className="border border-slate-200 bg-white p-6 sm:p-8 shadow-sm rounded-2xl dark:border-slate-800 dark:bg-slate-900">
-          <form onSubmit={handleUpdate} className="space-y-6">
-            
-            {error && (
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-600 dark:text-rose-400 flex items-center gap-2">
-                <span>⚠️</span>
-                <p>{error}</p>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              {/* Startup Name */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                  Startup Name *
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. NextGen Wave Era"
-                  value={formData.name}
-                  onChange={(e) => handleChange("name", e.target.value)}
-                  className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-800 dark:bg-slate-800/50 dark:text-white"
-                />
-              </div>
-
-              {/* Industry */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                  Industry *
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. FinTech, AI, EdTech"
-                  value={formData.industry}
-                  onChange={(e) => handleChange("industry", e.target.value)}
-                  className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-800 dark:bg-slate-800/50 dark:text-white"
-                />
-              </div>
-
-              {/* Funding Stage */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                  Funding Stage *
-                </label>
-                <select
-                  value={formData.fundingStage}
-                  onChange={(e) => handleChange("fundingStage", e.target.value)}
-                  className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-800 dark:bg-slate-800/50 dark:text-white"
-                >
-                  <option value="">Select Stage</option>
-                  {FUNDING_STAGES.map((stage) => (
-                    <option key={stage} value={stage}>{stage}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Founder Email */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Founder Email
-                </label>
-                <input
-                  type="email"
-                  value={session?.user?.email || ""}
-                  readOnly
-                  className="w-full h-12 rounded-xl border border-slate-200 bg-slate-100 px-4 text-sm text-slate-500 cursor-not-allowed dark:border-slate-800 dark:bg-slate-800/30 dark:text-slate-400"
-                />
-              </div>
-
-            </div>
-
-            {/* Startup Logo */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Startup Logo
-              </label>
-              <LogoUploader
-                logoPreview={logoPreview}
-                logoFile={logoFile}
-                onLogoChange={handleLogoChange}
-              />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Startup Description *
-              </label>
-              <textarea
-                rows={4}
-                placeholder="Tell us about your startup..."
-                value={formData.description}
-                onChange={(e) => handleChange("description", e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-900 focus:border-blue-500 focus:outline-none resize-none dark:border-slate-800 dark:bg-slate-800/50 dark:text-white"
-              />
-            </div>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              color="primary"
-              size="lg"
-              isLoading={updating}
-              isDisabled={updating}
-              className="w-full font-semibold shadow-md bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-12 dark:bg-blue-500 dark:hover:bg-blue-600"
-              startContent={!updating ? <Save size={18} /> : null}
-            >
-              {updating ? "Saving Changes..." : "Update Startup"}
-            </Button>
-
-          </form>
-        </Card>
+        <Button
+          color="danger"
+          variant="flat"
+          onPress={() => setShowDeleteModal(true)}
+          startContent={<Trash2 size={16} />}
+          className="w-fit font-semibold"
+        >
+          Delete Startup
+        </Button>
       </div>
+
+      {/* Form Card */}
+      <Card className="border border-default-200 bg-content1 p-6 sm:p-8 shadow-sm rounded-2xl dark:border-default-100">
+        <form onSubmit={handleUpdate} className="space-y-6">
+          
+          {error && (
+            <div className="rounded-xl border border-danger-200 bg-danger-50 dark:bg-danger-950/40 p-4 text-sm text-danger font-medium flex items-center gap-2">
+              <span>⚠️</span>
+              <p>{error}</p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Startup Name */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-default-700">
+                Startup Name *
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. NextGen Wave Era"
+                value={formData.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+                className="w-full h-12 rounded-xl border border-default-200 bg-content2 px-4 text-sm text-foreground focus:border-primary focus:outline-none transition dark:border-default-100"
+              />
+            </div>
+
+            {/* Industry */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-default-700">
+                Industry *
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. FinTech, AI, EdTech"
+                value={formData.industry}
+                onChange={(e) => handleChange("industry", e.target.value)}
+                className="w-full h-12 rounded-xl border border-default-200 bg-content2 px-4 text-sm text-foreground focus:border-primary focus:outline-none transition dark:border-default-100"
+              />
+            </div>
+
+            {/* Funding Stage */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-default-700">
+                Funding Stage *
+              </label>
+              <select
+                value={formData.fundingStage}
+                onChange={(e) => handleChange("fundingStage", e.target.value)}
+                className="w-full h-12 rounded-xl border border-default-200 bg-content2 px-4 text-sm text-foreground focus:border-primary focus:outline-none transition dark:border-default-100"
+              >
+                <option value="" className="bg-background text-foreground">Select Stage</option>
+                {FUNDING_STAGES.map((stage) => (
+                  <option key={stage} value={stage} className="bg-background text-foreground">
+                    {stage}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Founder Email */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-default-400">
+                Founder Email
+              </label>
+              <input
+                type="email"
+                value={session?.user?.email || ""}
+                readOnly
+                className="w-full h-12 rounded-xl border border-default-200 bg-default-100 px-4 text-sm text-default-500 cursor-not-allowed dark:border-default-100"
+              />
+            </div>
+
+          </div>
+
+          {/* Startup Logo */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-default-700">
+              Startup Logo
+            </label>
+            <LogoUploader
+              logoPreview={logoPreview}
+              logoFile={logoFile}
+              onLogoChange={handleLogoChange}
+            />
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-default-700">
+              Startup Description *
+            </label>
+            <textarea
+              rows={4}
+              placeholder="Tell us about your startup..."
+              value={formData.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+              className="w-full rounded-xl border border-default-200 bg-content2 p-4 text-sm text-foreground focus:border-primary focus:outline-none resize-none transition dark:border-default-100"
+            />
+          </div>
+
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            color="primary"
+            size="lg"
+            isLoading={updating}
+            isDisabled={updating}
+            className="w-full font-semibold shadow-md rounded-xl h-12"
+            startContent={!updating ? <Save size={18} /> : null}
+          >
+            {updating ? "Saving Changes..." : "Update Startup"}
+          </Button>
+
+        </form>
+      </Card>
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4 dark:border-slate-800 dark:bg-slate-900">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Delete Startup</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
-              Are you sure you want to delete <strong className="text-slate-900 dark:text-white">{formData.name}</strong>? This action cannot be undone.
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-default-200 bg-content1 p-6 shadow-2xl space-y-4 dark:border-default-100">
+            <h3 className="text-lg font-bold text-foreground">Delete Startup</h3>
+            <p className="text-sm text-default-500">
+              Are you sure you want to delete <strong className="text-foreground">{formData.name}</strong>? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="flat" onPress={() => setShowDeleteModal(false)} isDisabled={deleting}>
@@ -377,6 +381,6 @@ export default function ManageStartupPage({ params }) {
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Card, Spinner, Button } from "@heroui/react";
 import { CirclePlus, Pencil, House } from "@gravity-ui/icons";
@@ -10,6 +11,7 @@ import { authClient } from "@/lib/auth-client";
 import { serverFetch } from "@/lib/api";
 
 export default function MyStartups() {
+  const router = useRouter();
   const { data: session, isPending: authLoading } = authClient.useSession();
 
   const [startups, setStartups] = useState([]);
@@ -58,9 +60,8 @@ export default function MyStartups() {
           </p>
 
           <Button
-            as={Link}
-            href="/login"
             color="primary"
+            onPress={() => router.push("/login")}
             className="mt-5 font-semibold"
           >
             Login
@@ -84,9 +85,8 @@ export default function MyStartups() {
         </div>
 
         <Button
-          as={Link}
-          href="/dashboard/founder/startups/create-startup"
           color="primary"
+          onPress={() => router.push("/dashboard/founder/startups/create-startup")}
           startContent={<CirclePlus className="h-4 w-4" />}
           className="font-semibold shadow-sm"
         >
@@ -152,9 +152,8 @@ export default function MyStartups() {
                 </div>
 
                 <Button
-                  as={Link}
-                  href={`/dashboard/founder/startups/${item._id}`}
                   variant="bordered"
+                  onPress={() => router.push(`/dashboard/founder/startups/${item._id}`)}
                   startContent={<Pencil className="h-4 w-4" />}
                   className="shrink-0 font-semibold border-default-200 dark:border-default-100"
                 >
@@ -181,9 +180,8 @@ export default function MyStartups() {
           </p>
 
           <Button
-            as={Link}
-            href="/dashboard/founder/startups/create-startup"
             color="primary"
+            onPress={() => router.push("/dashboard/founder/startups/create-startup")}
             startContent={<CirclePlus className="h-4 w-4" />}
             className="mt-6 font-semibold shadow-sm"
           >
