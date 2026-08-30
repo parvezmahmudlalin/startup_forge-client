@@ -12,8 +12,8 @@ export default function ApplicationsPage() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [error, setError] = useState("");
 
-  // Application Data Fetching
   const fetchApplications = async () => {
     if (!session?.user?.email) {
       setLoading(false);
@@ -22,14 +22,28 @@ export default function ApplicationsPage() {
 
     try {
       setLoading(true);
+      setError("");
       const email = encodeURIComponent(session.user.email);
-      const data = await serverFetch(
+      const res = await serverFetch(
         `/api/founder/applications?email=${email}`
       );
-      setApplications(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Fetch applications error:", error);
-      setApplications([]);
+
+      if (res?.error) {
+        setError(res.message || "Failed to fetch applications.");
+        setApplications([]);
+        return;
+      }
+
+      if (Array.isArray(res)) {
+        setApplications(res);
+      } else if (res?.data && Array.isArray(res.data)) {
+        setApplications(res.data);
+      } else {
+        setApplications([]);
+      }
+    } catch (err) {
+      console.error("Fetch applications error:", err);
+      setError("Something went wrong while loading applications.");
     } finally {
       setLoading(false);
     }
@@ -41,30 +55,36 @@ export default function ApplicationsPage() {
     }
   }, [session?.user?.email]);
 
-  // Handle Accept / Reject Action (FIXED API URL & CALL)
   const handleStatusUpdate = async (id, newStatus) => {
     try {
       setUpdatingId(id);
 
-      // ✅ FIX: URL-এর সাথে `id` যোগ করা হয়েছে
-      await serverMutation(`/api/founder/applications/${id}`, "PATCH", {
-        status: newStatus,
-      });
+      const res = await serverMutation(
+        `/api/founder/applications/${id}`,
+        "PATCH",
+        {
+          status: newStatus,
+        }
+      );
+
+      if (res?.error) {
+        alert(res.message || "Failed to update application status.");
+        return;
+      }
 
       setApplications((prev) =>
         prev.map((item) =>
           item._id === id ? { ...item, status: newStatus } : item
         )
       );
-    } catch (error) {
-      console.error("Update status error:", error);
-      alert(error?.message || "Failed to update application status.");
+    } catch (err) {
+      console.error("Update status error:", err);
+      alert(err?.message || "Failed to update application status.");
     } finally {
       setUpdatingId(null);
     }
   };
 
-  // Auth Loading
   if (authLoading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center bg-transparent">
@@ -73,7 +93,6 @@ export default function ApplicationsPage() {
     );
   }
 
-  // Not Logged In
   if (!session?.user?.email) {
     return (
       <div className="flex min-h-[400px] items-center justify-center bg-transparent">
@@ -85,7 +104,7 @@ export default function ApplicationsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-6">
+    <div className="mx-auto max-w-6xl space-y-6 p-6 transition-colors">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -96,6 +115,13 @@ export default function ApplicationsPage() {
           Review candidate applications and manage their recruitment status.
         </p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300">
+          ⚠️ {error}
+        </div>
+      )}
 
       {/* Main Content */}
       {loading ? (
@@ -150,6 +176,23 @@ export default function ApplicationsPage() {
                     const status = item.status || "Pending";
                     const isProcessing = updatingId === item._id;
 
+                    // Data extract safe checks
+                    const name =
+                      item.collaborator_name ||
+                      item.applicant_name ||
+                      "Anonymous Applicant";
+
+                    const email =
+                      item.collaborator_email ||
+                      item.applicant_email ||
+                      "N/A";
+
+                    const roleTitle =
+                      item.opportunity_details?.title ||
+                      item.opportunity_details?.role ||
+                      item.role_title ||
+                      "Opportunity";
+
                     return (
                       <tr
                         key={item._id}
@@ -159,19 +202,17 @@ export default function ApplicationsPage() {
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
                             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                              {item.applicant_name
-                                ? item.applicant_name[0].toUpperCase()
-                                : "U"}
+                              {name ? name[0].toUpperCase() : "U"}
                             </div>
 
                             <div>
                               <p className="font-semibold text-slate-900 dark:text-white">
-                                {item.applicant_name || "Anonymous Applicant"}
+                                {name}
                               </p>
 
                               <p className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
                                 <FiMail size={12} />
-                                {item.applicant_email || "N/A"}
+                                {email}
                               </p>
                             </div>
                           </div>
@@ -179,7 +220,7 @@ export default function ApplicationsPage() {
 
                         {/* Role Title */}
                         <td className="px-5 py-4 text-sm font-medium text-slate-800 dark:text-slate-200">
-                          {item.role_title || "Opportunity"}
+                          {roleTitle}
                         </td>
 
                         {/* Status */}
@@ -200,7 +241,9 @@ export default function ApplicationsPage() {
                         {/* Date */}
                         <td className="px-5 py-4 text-sm text-slate-600 dark:text-slate-400">
                           {item.createdAt
-                            ? new Date(item.createdAt).toLocaleDateString("en-GB")
+                            ? new Date(item.createdAt).toLocaleDateString(
+                                "en-GB"
+                              )
                             : "N/A"}
                         </td>
 
@@ -210,7 +253,9 @@ export default function ApplicationsPage() {
                             {/* Accept Button */}
                             <button
                               type="button"
-                              disabled={isProcessing || status === "Accepted"}
+                              disabled={
+                                isProcessing || status === "Accepted"
+                              }
                               onClick={() =>
                                 handleStatusUpdate(item._id, "Accepted")
                               }
@@ -224,7 +269,9 @@ export default function ApplicationsPage() {
                             {/* Reject Button */}
                             <button
                               type="button"
-                              disabled={isProcessing || status === "Rejected"}
+                              disabled={
+                                isProcessing || status === "Rejected"
+                              }
                               onClick={() =>
                                 handleStatusUpdate(item._id, "Rejected")
                               }

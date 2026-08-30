@@ -2,7 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Button } from "@heroui/react";
+import { Card, Button, Spinner } from "@heroui/react";
 import { Save, Trash2 } from "lucide-react";
 
 import LogoUploader from "@/components/dashboard/founder/LogoUploader";
@@ -21,7 +21,7 @@ export default function ManageStartupPage({ params }) {
   const router = useRouter();
   const { data: session, isPending: authLoading } = authClient.useSession();
 
-  // Next.js 15+ কম্প্যাটিবিলিটির জন্য unwrapping params
+  // Next.js 15+ unwrapping params
   const resolvedParams = params ? use(params) : null;
   const targetStartupId = resolvedParams?.id;
 
@@ -61,14 +61,17 @@ export default function ManageStartupPage({ params }) {
         setInitialLoading(true);
         setError("");
 
-        // 🟢 FIX: ইমেইল দিয়ে না খুঁজে URL-এর নির্দিষ্ট targetStartupId দিয়ে API কল অথবা filtering
         const response = await serverFetch(
           `/api/founder/startup/${targetStartupId}`
         );
 
+        if (response?.error) {
+          setError(response.message || "Failed to load startup details.");
+          return;
+        }
+
         let data = response?.startup || response?.data || response;
 
-        // যদি ব্যাকএন্ড সিঙ্গেল অবজেক্ট না দিয়ে Array ফেরত দেয়, তবে ক্লিক করা ID-র সাথে match করানো হচ্ছে
         if (Array.isArray(data)) {
           data = data.find(
             (item) => item._id === targetStartupId || item.id === targetStartupId
@@ -140,7 +143,8 @@ export default function ManageStartupPage({ params }) {
       let logoUrl = existingLogoUrl;
 
       if (logoFile) {
-        logoUrl = await imageUploader(logoFile);
+        const uploadRes = await imageUploader(logoFile);
+        logoUrl = uploadRes?.url || uploadRes?.secure_url || uploadRes || existingLogoUrl;
       }
 
       const payload = {
@@ -152,7 +156,12 @@ export default function ManageStartupPage({ params }) {
         founder_email: session.user.email,
       };
 
-      await serverMutation(`/api/founder/startup/${startupId}`, "PUT", payload);
+      const res = await serverMutation(`/api/founder/startup/${startupId}`, "PUT", payload);
+
+      if (res?.error) {
+        setError(res.message || "Failed to update startup.");
+        return;
+      }
 
       router.push("/dashboard/founder/startups");
       router.refresh();
@@ -171,7 +180,12 @@ export default function ManageStartupPage({ params }) {
       setDeleting(true);
       setError("");
 
-      await serverMutation(`/api/founder/startup/${startupId}`, "DELETE");
+      const res = await serverMutation(`/api/founder/startup/${startupId}`, "DELETE");
+
+      if (res?.error) {
+        setError(res.message || "Failed to delete startup.");
+        return;
+      }
 
       setShowDeleteModal(false);
       router.push("/dashboard/founder/startups");
@@ -179,6 +193,7 @@ export default function ManageStartupPage({ params }) {
     } catch (err) {
       console.error("Delete startup error:", err);
       setError(err?.message || "Failed to delete startup.");
+    } finally {
       setDeleting(false);
     }
   };
@@ -186,7 +201,7 @@ export default function ManageStartupPage({ params }) {
   if (authLoading || initialLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="text-sm font-medium text-gray-400">Loading startup details...</div>
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -194,9 +209,9 @@ export default function ManageStartupPage({ params }) {
   if (!session?.user) {
     return (
       <main className="flex min-h-[60vh] items-center justify-center p-6">
-        <Card className="p-8 text-center bg-[#111625] border border-gray-800">
-          <h2 className="text-xl font-bold text-white">Login Required</h2>
-          <p className="mt-2 text-sm text-gray-400">Please login to manage your startup.</p>
+        <Card className="p-8 text-center border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-lg">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Login Required</h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Please login to manage your startup.</p>
           <Button color="primary" className="mt-5" onPress={() => router.push("/login")}>
             Go to Login
           </Button>
@@ -206,14 +221,14 @@ export default function ManageStartupPage({ params }) {
   }
 
   return (
-    <main className="min-h-screen bg-[#0b0e14] text-gray-100 p-4 sm:p-6 lg:p-8">
+    <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100 p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-4xl space-y-6">
         
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Manage / Edit Startup</h1>
-            <p className="text-sm text-gray-400">Update your startup profile information</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Manage / Edit Startup</h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400">Update your startup profile information</p>
           </div>
           
           <Button
@@ -227,12 +242,12 @@ export default function ManageStartupPage({ params }) {
           </Button>
         </div>
 
-        {/* Card Form */}
-        <Card className="border border-gray-800 bg-[#121824] p-6 sm:p-8 shadow-xl rounded-2xl">
+        {/* Form Card */}
+        <Card className="border border-slate-200 bg-white p-6 sm:p-8 shadow-sm rounded-2xl dark:border-slate-800 dark:bg-slate-900">
           <form onSubmit={handleUpdate} className="space-y-6">
             
             {error && (
-              <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400 flex items-center gap-2">
+              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-600 dark:text-rose-400 flex items-center gap-2">
                 <span>⚠️</span>
                 <p>{error}</p>
               </div>
@@ -242,7 +257,7 @@ export default function ManageStartupPage({ params }) {
               
               {/* Startup Name */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Startup Name *
                 </label>
                 <input
@@ -250,13 +265,13 @@ export default function ManageStartupPage({ params }) {
                   placeholder="e.g. NextGen Wave Era"
                   value={formData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
-                  className="w-full h-12 rounded-xl border border-gray-700 bg-[#1a2130] px-4 text-sm text-white focus:border-blue-500 focus:outline-none"
+                  className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-800 dark:bg-slate-800/50 dark:text-white"
                 />
               </div>
 
               {/* Industry */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Industry *
                 </label>
                 <input
@@ -264,19 +279,19 @@ export default function ManageStartupPage({ params }) {
                   placeholder="e.g. FinTech, AI, EdTech"
                   value={formData.industry}
                   onChange={(e) => handleChange("industry", e.target.value)}
-                  className="w-full h-12 rounded-xl border border-gray-700 bg-[#1a2130] px-4 text-sm text-white focus:border-blue-500 focus:outline-none"
+                  className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-800 dark:bg-slate-800/50 dark:text-white"
                 />
               </div>
 
               {/* Funding Stage */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Funding Stage *
                 </label>
                 <select
                   value={formData.fundingStage}
                   onChange={(e) => handleChange("fundingStage", e.target.value)}
-                  className="w-full h-12 rounded-xl border border-gray-700 bg-[#1a2130] px-4 text-sm text-white focus:border-blue-500 focus:outline-none"
+                  className="w-full h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-800 dark:bg-slate-800/50 dark:text-white"
                 >
                   <option value="">Select Stage</option>
                   {FUNDING_STAGES.map((stage) => (
@@ -287,14 +302,14 @@ export default function ManageStartupPage({ params }) {
 
               {/* Founder Email */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Founder Email
                 </label>
                 <input
                   type="email"
                   value={session?.user?.email || ""}
                   readOnly
-                  className="w-full h-12 rounded-xl border border-gray-800 bg-[#151b26] px-4 text-sm text-gray-400 cursor-not-allowed"
+                  className="w-full h-12 rounded-xl border border-slate-200 bg-slate-100 px-4 text-sm text-slate-500 cursor-not-allowed dark:border-slate-800 dark:bg-slate-800/30 dark:text-slate-400"
                 />
               </div>
 
@@ -302,7 +317,7 @@ export default function ManageStartupPage({ params }) {
 
             {/* Startup Logo */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 Startup Logo
               </label>
               <LogoUploader
@@ -314,7 +329,7 @@ export default function ManageStartupPage({ params }) {
 
             {/* Description */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 Startup Description *
               </label>
               <textarea
@@ -322,7 +337,7 @@ export default function ManageStartupPage({ params }) {
                 placeholder="Tell us about your startup..."
                 value={formData.description}
                 onChange={(e) => handleChange("description", e.target.value)}
-                className="w-full rounded-xl border border-gray-700 bg-[#1a2130] p-4 text-sm text-white focus:border-blue-500 focus:outline-none resize-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-900 focus:border-blue-500 focus:outline-none resize-none dark:border-slate-800 dark:bg-slate-800/50 dark:text-white"
               />
             </div>
 
@@ -333,7 +348,7 @@ export default function ManageStartupPage({ params }) {
               size="lg"
               isLoading={updating}
               isDisabled={updating}
-              className="w-full font-semibold shadow-lg bg-blue-600 hover:bg-blue-500 text-white rounded-xl h-12"
+              className="w-full font-semibold shadow-md bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-12 dark:bg-blue-500 dark:hover:bg-blue-600"
               startContent={!updating ? <Save size={18} /> : null}
             >
               {updating ? "Saving Changes..." : "Update Startup"}
@@ -345,11 +360,11 @@ export default function ManageStartupPage({ params }) {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-gray-800 bg-[#121824] p-6 shadow-2xl space-y-4">
-            <h3 className="text-lg font-bold text-white">Delete Startup</h3>
-            <p className="text-sm text-gray-300">
-              Are you sure you want to delete <strong className="text-white">{formData.name}</strong>? This action cannot be undone.
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl space-y-4 dark:border-slate-800 dark:bg-slate-900">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Delete Startup</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              Are you sure you want to delete <strong className="text-slate-900 dark:text-white">{formData.name}</strong>? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="flat" onPress={() => setShowDeleteModal(false)} isDisabled={deleting}>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -30,8 +29,7 @@ const INITIAL_FORM_DATA = {
 export default function AddOpportunityModal({ isOpen = true, onClose }) {
   const router = useRouter();
 
-  const { data: session, isPending: authLoading } =
-    authClient.useSession();
+  const { data: session, isPending: authLoading } = authClient.useSession();
 
   const [startups, setStartups] = useState([]);
   const [fetchingStartups, setFetchingStartups] = useState(true);
@@ -40,9 +38,6 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // =====================================================
-  // CLOSE MODAL
-  // =====================================================
   const handleClose = () => {
     if (onClose) {
       onClose();
@@ -51,9 +46,6 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
     }
   };
 
-  // =====================================================
-  // FETCH FOUNDER STARTUPS
-  // =====================================================
   useEffect(() => {
     if (authLoading) return;
 
@@ -69,11 +61,22 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
 
         const email = encodeURIComponent(session.user.email);
 
-        const data = await serverFetch(
+        const res = await serverFetch(
           `/api/founder/startup?email=${email}`
         );
 
-        const fetchedStartups = Array.isArray(data) ? data : [];
+        if (res?.error) {
+          setError(res.message || "Failed to load your startups.");
+          setStartups([]);
+          return;
+        }
+
+        let fetchedStartups = [];
+        if (Array.isArray(res)) {
+          fetchedStartups = res;
+        } else if (res?.data && Array.isArray(res.data)) {
+          fetchedStartups = res.data;
+        }
 
         setStartups(fetchedStartups);
 
@@ -85,7 +88,6 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
         }
       } catch (err) {
         console.error("Failed to fetch startups:", err);
-
         setError(
           err instanceof Error
             ? err.message
@@ -99,9 +101,6 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
     fetchStartups();
   }, [session?.user?.email, authLoading]);
 
-  // =====================================================
-  // HANDLE INPUT CHANGE
-  // =====================================================
   const handleChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -109,9 +108,6 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
     }));
   };
 
-  // =====================================================
-  // VALIDATE FORM
-  // =====================================================
   const validateForm = () => {
     if (!session?.user?.email) {
       return "User session not found. Please login again.";
@@ -144,9 +140,6 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
     return null;
   };
 
-  // =====================================================
-  // SUBMIT OPPORTUNITY
-  // =====================================================
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -176,18 +169,16 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
         founder_email: session.user.email,
       };
 
-      // Create Opportunity
       const response = await serverMutation(
         "/api/founder/opportunities",
         "POST",
         payload
       );
 
-      console.log("Opportunity created:", response);
-
-      // =================================================
-      // SUCCESS → MANAGE OPPORTUNITY PAGE
-      // =================================================
+      if (response?.error) {
+        setError(response.message || "Failed to add opportunity.");
+        return;
+      }
 
       if (onClose) {
         onClose();
@@ -198,7 +189,6 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
 
     } catch (err) {
       console.error("Add opportunity error:", err);
-
       setError(
         err instanceof Error
           ? err.message
@@ -209,30 +199,27 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
     }
   };
 
-  // =====================================================
-  // MODAL CLOSED
-  // =====================================================
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-      <div className="relative w-full max-w-lg rounded-2xl bg-white shadow-2xl">
+      <div className="relative w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl transition-colors">
 
         {/* Header */}
-        <div className="relative border-b border-slate-100 p-6 pb-4">
+        <div className="relative border-b border-slate-100 dark:border-slate-800 p-6 pb-4">
           <button
             type="button"
             onClick={handleClose}
-            className="absolute right-5 top-5 rounded-lg text-slate-400 hover:text-slate-600"
+            className="absolute right-5 top-5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
           >
             <X size={20} />
           </button>
 
-          <h2 className="text-xl font-bold text-slate-900">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
             Create Opportunity
           </h2>
 
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             Create a new opportunity for your startup.
           </p>
         </div>
@@ -245,7 +232,7 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
               <Spinner size="lg" />
             </div>
           ) : !session?.user?.email ? (
-            <div className="py-8 text-center text-slate-600">
+            <div className="py-8 text-center text-slate-600 dark:text-slate-400">
               Please login first to add opportunities.
             </div>
           ) : (
@@ -253,14 +240,14 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
 
               {/* Error */}
               {error && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                <div className="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/40 dark:border-rose-900 p-3 text-sm text-rose-700 dark:text-rose-300">
                   {error}
                 </div>
               )}
 
               {/* Startup */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-800">
+                <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
                   Select Startup{" "}
                   <span className="text-rose-500">*</span>
                 </label>
@@ -271,7 +258,7 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
                     handleChange("startupId", e.target.value)
                   }
                   disabled={startups.length === 0}
-                  className="w-full rounded-xl bg-[#090d16] px-4 py-3 text-sm font-medium text-white outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 >
                   {startups.length === 0 ? (
                     <option value="" disabled>
@@ -292,7 +279,7 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
 
               {/* Role */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-800">
+                <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
                   Role Title{" "}
                   <span className="text-rose-500">*</span>
                 </label>
@@ -304,13 +291,13 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
                   onChange={(e) =>
                     handleChange("roleTitle", e.target.value)
                   }
-                  className="w-full rounded-xl bg-[#090d16] px-4 py-3 text-sm text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               {/* Skills */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-800">
+                <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
                   Required Skills{" "}
                   <span className="text-rose-500">*</span>
                 </label>
@@ -325,17 +312,17 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
                       e.target.value
                     )
                   }
-                  className="w-full rounded-xl bg-[#090d16] px-4 py-3 text-sm text-white placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-blue-500"
                 />
 
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   Separate skills using commas.
                 </p>
               </div>
 
               {/* Work Type */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-800">
+                <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
                   Work Type
                 </label>
 
@@ -344,7 +331,7 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
                   onChange={(e) =>
                     handleChange("workType", e.target.value)
                   }
-                  className="w-full rounded-xl bg-[#090d16] px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {WORK_TYPES.map((type) => (
                     <option key={type} value={type}>
@@ -356,7 +343,7 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
 
               {/* Commitment */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-800">
+                <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
                   Commitment
                 </label>
 
@@ -368,7 +355,7 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
                       e.target.value
                     )
                   }
-                  className="w-full rounded-xl bg-[#090d16] px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {COMMITMENT_LEVELS.map((level) => (
                     <option key={level} value={level}>
@@ -380,7 +367,7 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
 
               {/* Deadline */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-800">
+                <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
                   Deadline{" "}
                   <span className="text-rose-500">*</span>
                 </label>
@@ -391,18 +378,18 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
                   onChange={(e) =>
                     handleChange("deadline", e.target.value)
                   }
-                  className="w-full rounded-xl bg-[#090d16] px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500 [color-scheme:dark]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
                 />
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+              <div className="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
 
                 <button
                   type="button"
                   onClick={handleClose}
                   disabled={loading}
-                  className="rounded-xl bg-slate-100 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 disabled:opacity-50"
+                  className="rounded-xl bg-slate-100 dark:bg-slate-800 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -431,4 +418,3 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
     </div>
   );
 }
-

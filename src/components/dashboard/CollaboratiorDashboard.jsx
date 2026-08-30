@@ -6,6 +6,7 @@ import { serverFetch } from "@/lib/api";
 
 export default function CollaboratorDashboard({ session }) {
   const [myApplications, setMyApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCollaboratorData = async () => {
@@ -16,9 +17,13 @@ export default function CollaboratorDashboard({ session }) {
         const res = await serverFetch(`/api/my-applications?email=${email}`);
         if (Array.isArray(res)) {
           setMyApplications(res);
+        } else if (res?.data && Array.isArray(res.data)) {
+          setMyApplications(res.data);
         }
       } catch (err) {
         console.error("Error fetching collaborator data:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -34,78 +39,108 @@ export default function CollaboratorDashboard({ session }) {
   ).length;
 
   return (
-    <div className="space-y-8 p-6">
+    <div className="w-full space-y-6 p-4 sm:p-6 lg:p-8">
       <div>
-        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
           Welcome back, {session?.user?.name || "Collaborator"}! 👋
         </h1>
-        <p className="text-sm text-default-500">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Track your applications and explore new opportunities.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-default-200 bg-background p-5 shadow-sm dark:border-default-100 dark:bg-content1">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-default-500">Applied Jobs</span>
-            <Send size={20} className="text-primary" />
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              Applied Jobs
+            </span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
+              <Send size={20} />
+            </div>
           </div>
-          <h3 className="mt-2 text-2xl font-bold">{appliedCount}</h3>
+          <h3 className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">
+            {appliedCount}
+          </h3>
         </div>
 
-        <div className="rounded-2xl border border-default-200 bg-background p-5 shadow-sm dark:border-default-100 dark:bg-content1">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-default-500">Pending Review</span>
-            <Clock size={20} className="text-warning" />
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              Pending Review
+            </span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400">
+              <Clock size={20} />
+            </div>
           </div>
-          <h3 className="mt-2 text-2xl font-bold">{pendingCount}</h3>
+          <h3 className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">
+            {pendingCount}
+          </h3>
         </div>
 
-        <div className="rounded-2xl border border-default-200 bg-background p-5 shadow-sm dark:border-default-100 dark:bg-content1">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900 sm:col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-default-500">Accepted</span>
-            <CheckCircle2 size={20} className="text-success" />
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              Accepted
+            </span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
+              <CheckCircle2 size={20} />
+            </div>
           </div>
-          <h3 className="mt-2 text-2xl font-bold">{acceptedCount}</h3>
+          <h3 className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">
+            {acceptedCount}
+          </h3>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-default-200 bg-background p-6 shadow-sm dark:border-default-100 dark:bg-content1">
-        <h2 className="mb-4 text-lg font-bold">My Applications</h2>
-        <div className="divide-y divide-default-100">
-          {myApplications.length === 0 ? (
-            <p className="py-4 text-sm text-default-400">
-              You haven't applied to any roles yet.
-            </p>
-          ) : (
-            myApplications.map((app) => (
-              <div
-                key={app._id}
-                className="flex items-center justify-between py-3"
-              >
-                <div>
-                  <p className="font-semibold text-foreground">
-                    {app.opportunity_details?.role_title || "Role"}
-                  </p>
-                  <p className="text-xs text-default-400">
-                    Startup: {app.startup_details?.startup_name || "N/A"}
-                  </p>
-                </div>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${
-                    app.status === "Accepted"
-                      ? "bg-success/10 text-success"
-                      : app.status === "Rejected"
-                      ? "bg-danger/10 text-danger"
-                      : "bg-warning/10 text-warning"
-                  }`}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+        <h2 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">
+          My Applications
+        </h2>
+
+        {loading ? (
+          <div className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            Loading applications...
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            {myApplications.length === 0 ? (
+              <p className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+                You haven't applied to any roles yet.
+              </p>
+            ) : (
+              myApplications.map((app) => (
+                <div
+                  key={app._id}
+                  className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  {app.status || "Pending"}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
+                  <div className="space-y-1">
+                    <p className="font-semibold text-slate-900 dark:text-white">
+                      {app.opportunity_details?.role_title || "Role Title"}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Startup: {app.startup_details?.startup_name || "N/A"}
+                    </p>
+                  </div>
+
+                  <div className="mt-2 sm:mt-0">
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                        app.status === "Accepted"
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300"
+                          : app.status === "Rejected"
+                          ? "bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300"
+                          : "bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300"
+                      }`}
+                    >
+                      {app.status || "Pending"}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

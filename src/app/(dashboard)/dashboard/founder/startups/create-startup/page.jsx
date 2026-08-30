@@ -25,10 +25,6 @@ export default function CreateStartupForm() {
     logo: "",
   });
 
-  // =====================================================
-  // HANDLE INPUT CHANGE
-  // =====================================================
-
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -38,25 +34,13 @@ export default function CreateStartupForm() {
     }));
   };
 
-  // =====================================================
-  // HANDLE SUBMIT
-  // =====================================================
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // ---------------------------------------------------
-    // CHECK LOGIN
-    // ---------------------------------------------------
 
     if (!session?.user?.email) {
       alert("Please login first.");
       return;
     }
-
-    // ---------------------------------------------------
-    // VALIDATE REQUIRED FIELDS
-    // ---------------------------------------------------
 
     if (
       !formData.startup_name.trim() ||
@@ -70,10 +54,6 @@ export default function CreateStartupForm() {
     try {
       setLoading(true);
 
-      // =================================================
-      // COMPLETE STARTUP DATA
-      // =================================================
-
       const payload = {
         startup_name: formData.startup_name.trim(),
         industry: formData.industry.trim(),
@@ -82,12 +62,6 @@ export default function CreateStartupForm() {
         logo: formData.logo.trim(),
         founder_email: session.user.email.trim(),
       };
-
-      console.log("Startup payload:", payload);
-
-      // =================================================
-      // CHECK FREE LIMIT / PAYMENT
-      // =================================================
 
       const checkRes = await serverMutation(
         "/api/payment/create-checkout-session",
@@ -98,12 +72,6 @@ export default function CreateStartupForm() {
         }
       );
 
-      console.log("Payment check response:", checkRes);
-
-      // =================================================
-      // PAYMENT REQUIRED
-      // =================================================
-
       if (
         checkRes?.requiresPayment &&
         checkRes?.checkoutUrl
@@ -112,15 +80,10 @@ export default function CreateStartupForm() {
           "You have reached your 3 free startup limit. Redirecting to Stripe..."
         );
 
-        // Stripe checkout
         window.location.href = checkRes.checkoutUrl;
 
         return;
       }
-
-      // =================================================
-      // FREE LIMIT AVAILABLE
-      // =================================================
 
       if (checkRes?.requiresPayment === false) {
         const result = await serverMutation(
@@ -143,10 +106,6 @@ export default function CreateStartupForm() {
         return;
       }
 
-      // =================================================
-      // UNEXPECTED RESPONSE
-      // =================================================
-
       throw new Error(
         "Unable to determine payment status."
       );
@@ -165,10 +124,6 @@ export default function CreateStartupForm() {
     }
   };
 
-  // =====================================================
-  // AUTH LOADING
-  // =====================================================
-
   if (authLoading) {
     return (
       <div className="flex min-h-[200px] items-center justify-center">
@@ -177,19 +132,11 @@ export default function CreateStartupForm() {
     );
   }
 
-  // =====================================================
-  // FORM
-  // =====================================================
-
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 rounded-2xl border border-default-200 bg-background p-6 shadow-sm dark:border-default-100 dark:bg-content1"
+      className="space-y-6 rounded-2xl border border-default-200 bg-content1 p-6 shadow-sm dark:border-default-100"
     >
-      {/* =================================================
-          STARTUP NAME
-      ================================================= */}
-
       <div>
         <label className="mb-2 block text-sm font-medium text-foreground">
           Startup Name{" "}
@@ -207,10 +154,6 @@ export default function CreateStartupForm() {
           className="w-full rounded-xl border border-default-200 bg-content2 px-4 py-2.5 text-sm text-foreground placeholder:text-default-400 outline-none transition focus:border-primary disabled:cursor-not-allowed disabled:opacity-60 dark:border-default-100"
         />
       </div>
-
-      {/* =================================================
-          INDUSTRY
-      ================================================= */}
 
       <div>
         <label className="mb-2 block text-sm font-medium text-foreground">
@@ -230,10 +173,6 @@ export default function CreateStartupForm() {
         />
       </div>
 
-      {/* =================================================
-          FUNDING STAGE
-      ================================================= */}
-
       <div>
         <label className="mb-2 block text-sm font-medium text-foreground">
           Funding Stage
@@ -248,37 +187,33 @@ export default function CreateStartupForm() {
         >
           <option
             value="Idea"
-            className="bg-background text-foreground"
+            className="bg-content1 text-foreground"
           >
             Idea
           </option>
 
           <option
             value="Pre-seed"
-            className="bg-background text-foreground"
+            className="bg-content1 text-foreground"
           >
             Pre-seed
           </option>
 
           <option
             value="Seed"
-            className="bg-background text-foreground"
+            className="bg-content1 text-foreground"
           >
             Seed
           </option>
 
           <option
             value="Series A"
-            className="bg-background text-foreground"
+            className="bg-content1 text-foreground"
           >
             Series A
           </option>
         </select>
       </div>
-
-      {/* =================================================
-          DESCRIPTION
-      ================================================= */}
 
       <div>
         <label className="mb-2 block text-sm font-medium text-foreground">
@@ -297,10 +232,6 @@ export default function CreateStartupForm() {
           className="w-full rounded-xl border border-default-200 bg-content2 p-3 text-sm text-foreground placeholder:text-default-400 outline-none transition focus:border-primary disabled:cursor-not-allowed disabled:opacity-60 dark:border-default-100"
         />
       </div>
-
-      {/* =================================================
-          CREATE BUTTON
-      ================================================= */}
 
       <button
         type="submit"

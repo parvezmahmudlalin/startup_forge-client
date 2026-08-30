@@ -17,7 +17,6 @@ export default function OpportunityModal({
   const [loading, setLoading] = useState(false);
   const submittingRef = useRef(false);
 
-  // Startup Dropdown-এর জন্য স্টেট
   const [startups, setStartups] = useState([]);
   const [selectedStartupId, setSelectedStartupId] = useState("");
 
@@ -29,7 +28,6 @@ export default function OpportunityModal({
     deadline: "",
   });
 
-  // ফাউন্ডারের তৈরি করা সব স্টার্টআপ ডাটা ফেচ করা
   useEffect(() => {
     if (!isOpen || !founderEmail) return;
 
@@ -49,7 +47,6 @@ export default function OpportunityModal({
       .catch((err) => console.error("Failed to fetch startups:", err));
   }, [isOpen, founderEmail, propStartupId, initialData]);
 
-  // initialData থাকলে ফর্মে ডাটা সেট করা অথবা রিসেট করা
   useEffect(() => {
     if (!isOpen) return;
 
@@ -145,7 +142,7 @@ export default function OpportunityModal({
         }
       }}
     >
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-800 dark:bg-slate-900 dark:text-white">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl dark:border-slate-800 dark:bg-slate-900 dark:text-white transition-colors duration-200">
         <form onSubmit={handleSubmit}>
           {/* HEADER */}
           <div className="border-b border-slate-200 px-6 py-5 dark:border-slate-800">
@@ -165,7 +162,7 @@ export default function OpportunityModal({
                 type="button"
                 onClick={onClose}
                 disabled={loading}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition-colors"
               >
                 ×
               </button>
@@ -183,7 +180,7 @@ export default function OpportunityModal({
                 value={selectedStartupId}
                 onChange={(e) => setSelectedStartupId(e.target.value)}
                 required
-                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-600 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-blue-500"
+                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition hover:border-slate-400 focus:border-blue-600 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:hover:border-slate-700 dark:focus:border-blue-500 cursor-pointer"
               >
                 <option value="" disabled className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">
                   {startups.length > 0
@@ -213,7 +210,7 @@ export default function OpportunityModal({
                 placeholder="e.g. Senior React Developer"
                 value={formData.roleTitle}
                 onChange={(e) => handleChange("roleTitle", e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-600 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-500"
+                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-600 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:hover:border-slate-700 dark:focus:border-blue-500"
               />
             </div>
 
@@ -228,7 +225,7 @@ export default function OpportunityModal({
                 placeholder="React, Node.js, MongoDB"
                 value={formData.requiredSkills}
                 onChange={(e) => handleChange("requiredSkills", e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-600 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-blue-500"
+                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-600 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500 dark:hover:border-slate-700 dark:focus:border-blue-500"
               />
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Separate skills using commas.
@@ -243,7 +240,7 @@ export default function OpportunityModal({
               <select
                 value={formData.workType}
                 onChange={(e) => handleChange("workType", e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-600 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-blue-500"
+                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition hover:border-slate-400 focus:border-blue-600 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:hover:border-slate-700 dark:focus:border-blue-500 cursor-pointer"
               >
                 {WORK_TYPES.map((type) => (
                   <option
@@ -267,7 +264,7 @@ export default function OpportunityModal({
                 onChange={(e) =>
                   handleChange("commitmentLevel", e.target.value)
                 }
-                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-600 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-blue-500"
+                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition hover:border-slate-400 focus:border-blue-600 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:hover:border-slate-700 dark:focus:border-blue-500 cursor-pointer"
               >
                 {COMMITMENTS.map((item) => (
                   <option
@@ -291,7 +288,7 @@ export default function OpportunityModal({
                 required
                 value={formData.deadline}
                 onChange={(e) => handleChange("deadline", e.target.value)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-600 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-blue-500"
+                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition hover:border-slate-400 focus:border-blue-600 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:hover:border-slate-700 dark:focus:border-blue-500 cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
               />
             </div>
           </div>
@@ -309,7 +306,7 @@ export default function OpportunityModal({
             <button
               type="submit"
               disabled={loading || (!selectedStartupId && !propStartupId)}
-              className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
+              className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               {loading
                 ? "Saving..."

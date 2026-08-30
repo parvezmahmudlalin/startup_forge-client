@@ -17,6 +17,8 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+
 export default function ProfilePage() {
   const { data: session, isPending: authLoading } = authClient.useSession();
   const user = session?.user;
@@ -162,8 +164,9 @@ export default function ProfilePage() {
         image: finalImage || "",
       });
 
-      // 3. Update Database
-      await serverMutation("/api/users/profile", "PUT", {
+      // 3. Update Database via API using env base URL
+      const endpoint = `${API_BASE_URL}/api/users/profile`;
+      await serverMutation(endpoint, "PUT", {
         email: user.email,
         name: editName.trim(),
         image: finalImage || "",
@@ -197,8 +200,8 @@ export default function ProfilePage() {
   // Auth Loading
   if (authLoading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+      <div className="flex justify-center py-20 text-slate-700 dark:text-slate-300">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent dark:border-indigo-400" />
       </div>
     );
   }
@@ -206,8 +209,8 @@ export default function ProfilePage() {
   // Not Logged In
   if (!user) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center p-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex justify-center py-20">
+        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <FiAlertCircle className="mx-auto mb-3 text-rose-500" size={32} />
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
             Authentication Required
@@ -221,128 +224,126 @@ export default function ProfilePage() {
   }
 
   return (
-    <>
-      <div className="mx-auto max-w-5xl px-5 py-8">
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              My Profile
-            </h1>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              Manage your personal information and professional profile.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleOpenEdit}
-            className="flex w-fit items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98]"
-          >
-            <FiEdit3 size={17} />
-            Edit Profile
-          </button>
+    <div className="w-full space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            My Profile
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Manage your personal information and professional profile.
+          </p>
         </div>
 
-        {/* Global Message */}
-        {message.text && (
-          <div
-            className={`mb-6 flex items-center gap-3 rounded-xl border px-4 py-3 text-sm ${
-              message.type === "success"
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
-                : "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400"
-            }`}
-          >
-            {message.type === "success" ? (
-              <FiCheckCircle size={18} />
-            ) : (
-              <FiAlertCircle size={18} />
-            )}
-            {message.text}
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={handleOpenEdit}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+        >
+          <FiEdit3 size={16} />
+          Edit Profile
+        </button>
+      </div>
 
-        {/* Profile Card */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          {/* Main Info */}
-          <div className="border-b border-slate-200 p-6 dark:border-slate-800 sm:p-8">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-              <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-800">
-                {image ? (
-                  <img
-                    src={image}
-                    alt={name || "Profile"}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <FiUser size={42} className="text-slate-400" />
-                )}
-              </div>
+      {/* Global Message */}
+      {message.text && (
+        <div
+          className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm ${
+            message.type === "success"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
+              : "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400"
+          }`}
+        >
+          {message.type === "success" ? (
+            <FiCheckCircle size={18} />
+          ) : (
+            <FiAlertCircle size={18} />
+          )}
+          {message.text}
+        </div>
+      )}
 
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {name || "Your Name"}
-                </h2>
-                <div className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                  <FiMail size={15} />
-                  {email}
-                </div>
-                {user.role && (
-                  <span className="mt-3 inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-medium capitalize text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
-                    {user.role}
-                  </span>
-                )}
-              </div>
+      {/* Profile Card */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        {/* Main Info */}
+        <div className="border-b border-slate-100 p-6 dark:border-slate-800 sm:p-8">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-800">
+              {image ? (
+                <img
+                  src={image}
+                  alt={name || "Profile"}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <FiUser size={38} className="text-slate-400 dark:text-slate-500" />
+              )}
             </div>
-          </div>
 
-          {/* About */}
-          <div className="border-b border-slate-200 p-6 dark:border-slate-800 sm:p-8">
-            <h3 className="mb-3 text-lg font-semibold text-slate-900 dark:text-white">
-              About Me
-            </h3>
-            <p className="text-sm leading-7 text-slate-600 dark:text-slate-400">
-              {bio || (
-                <span className="text-slate-400 dark:text-slate-500">
-                  No bio added yet. Click{" "}
-                  <span className="text-blue-600 dark:text-blue-400">
-                    Edit Profile
-                  </span>{" "}
-                  to add your bio.
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">
+                {name || "Your Name"}
+              </h2>
+              <div className="mt-1 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                <FiMail size={15} />
+                {email}
+              </div>
+              {user.role && (
+                <span className="mt-3 inline-flex rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold capitalize text-indigo-700 ring-1 ring-indigo-600/20 dark:bg-indigo-950/50 dark:text-indigo-400 dark:ring-indigo-500/30">
+                  {user.role}
                 </span>
               )}
-            </p>
+            </div>
           </div>
+        </div>
 
-          {/* Skills */}
-          <div className="p-6 sm:p-8">
-            <h3 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">
-              Skills
-            </h3>
-            {skills.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {skills.map((skill, index) => (
-                  <span
-                    key={`${skill}-${index}`}
-                    className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-500">
-                No skills added yet.
-              </p>
+        {/* About */}
+        <div className="border-b border-slate-100 p-6 dark:border-slate-800 sm:p-8">
+          <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white">
+            About Me
+          </h3>
+          <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            {bio || (
+              <span className="text-slate-400 dark:text-slate-500">
+                No bio added yet. Click{" "}
+                <span className="font-medium text-indigo-600 dark:text-indigo-400">
+                  Edit Profile
+                </span>{" "}
+                to add your bio.
+              </span>
             )}
-          </div>
+          </p>
+        </div>
+
+        {/* Skills */}
+        <div className="p-6 sm:p-8">
+          <h3 className="mb-3 text-base font-bold text-slate-900 dark:text-white">
+            Skills
+          </h3>
+          {skills.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill, index) => (
+                <span
+                  key={`${skill}-${index}`}
+                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400 dark:text-slate-500">
+              No skills added yet.
+            </p>
+          )}
         </div>
       </div>
 
       {/* EDIT PROFILE MODAL */}
       {isEditModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm dark:bg-black/80"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm dark:bg-black/70"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget && !isSaving) {
               handleCloseEdit();
@@ -351,9 +352,9 @@ export default function ProfilePage() {
         >
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
             {/* Modal Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white/95 px-6 py-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white px-6 py-4 dark:border-slate-800 dark:bg-slate-900">
               <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                   Edit Profile
                 </h2>
                 <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
@@ -365,22 +366,22 @@ export default function ProfilePage() {
                 type="button"
                 onClick={handleCloseEdit}
                 disabled={isSaving}
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
               >
-                <FiX size={20} />
+                <FiX size={18} />
               </button>
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleSaveProfile} className="space-y-6 p-6">
+            <form onSubmit={handleSaveProfile} className="space-y-5 p-6">
               {/* Photo Input */}
               <div>
-                <label className="mb-3 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Profile Photo
                 </label>
 
-                <div className="flex items-center gap-5">
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-800">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
                     {editImage ? (
                       <img
                         src={editImage}
@@ -388,16 +389,16 @@ export default function ProfilePage() {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <FiUser size={34} className="text-slate-400" />
+                      <FiUser size={30} className="text-slate-400 dark:text-slate-500" />
                     )}
                   </div>
 
                   <div>
                     <label
                       htmlFor="edit-profile-image"
-                      className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                      className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                     >
-                      <FiCamera size={16} />
+                      <FiCamera size={15} />
                       Change Photo
                       <input
                         id="edit-profile-image"
@@ -408,7 +409,7 @@ export default function ProfilePage() {
                       />
                     </label>
 
-                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
                       JPG, PNG or WebP. Max 5MB.
                     </p>
                   </div>
@@ -419,14 +420,14 @@ export default function ProfilePage() {
               <div>
                 <label
                   htmlFor="edit-name"
-                  className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
                 >
                   Full Name
                 </label>
                 <div className="relative">
                   <FiUser
-                    size={17}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
                   />
                   <input
                     id="edit-name"
@@ -434,7 +435,7 @@ export default function ProfilePage() {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     placeholder="Enter your name"
-                    className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-10 pr-4 text-sm text-slate-900 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                    className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 outline-none transition focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-indigo-500 dark:focus:ring-indigo-500"
                   />
                 </div>
               </div>
@@ -443,21 +444,21 @@ export default function ProfilePage() {
               <div>
                 <label
                   htmlFor="edit-email"
-                  className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
                 >
                   Email Address
                 </label>
                 <div className="relative">
                   <FiMail
-                    size={17}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={16}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
                   />
                   <input
                     id="edit-email"
                     type="email"
                     value={email}
                     disabled
-                    className="w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 py-3 pl-10 pr-4 text-sm text-slate-500 outline-none dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400"
+                    className="w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 py-2.5 pl-10 pr-4 text-sm text-slate-500 outline-none dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400"
                   />
                 </div>
               </div>
@@ -466,7 +467,7 @@ export default function ProfilePage() {
               <div>
                 <label
                   htmlFor="edit-bio"
-                  className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                  className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
                 >
                   Bio
                 </label>
@@ -475,18 +476,18 @@ export default function ProfilePage() {
                   value={editBio}
                   onChange={(e) => setEditBio(e.target.value)}
                   placeholder="Tell others about yourself..."
-                  rows={4}
+                  rows={3}
                   maxLength={500}
-                  className="w-full resize-none rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                  className="w-full resize-none rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-indigo-500 dark:focus:ring-indigo-500"
                 />
-                <p className="mt-1 text-right text-xs text-slate-500 dark:text-slate-400">
+                <p className="mt-1 text-right text-xs text-slate-400 dark:text-slate-500">
                   {editBio.length}/500
                 </p>
               </div>
 
               {/* Skills Input */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Skills
                 </label>
                 <div className="flex gap-2">
@@ -496,15 +497,15 @@ export default function ProfilePage() {
                     onChange={(e) => setSkillInput(e.target.value)}
                     onKeyDown={handleSkillKeyDown}
                     placeholder="e.g. React, Node.js, UI/UX"
-                    className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                    className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-indigo-500 dark:focus:ring-indigo-500"
                   />
                   <button
                     type="button"
                     onClick={handleAddSkill}
-                    className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700"
                   >
-                    <FiPlus size={17} />
-                    <span className="hidden sm:inline">Add</span>
+                    <FiPlus size={16} />
+                    <span>Add</span>
                   </button>
                 </div>
 
@@ -514,15 +515,15 @@ export default function ProfilePage() {
                     {editSkills.map((skill, index) => (
                       <div
                         key={`${skill}-${index}`}
-                        className="flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                       >
                         <span>{skill}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveSkill(skill)}
-                          className="rounded-full p-0.5 hover:bg-blue-200 hover:text-blue-900 dark:hover:bg-blue-500/20 dark:hover:text-white"
+                          className="rounded-full p-0.5 hover:bg-slate-200 dark:hover:bg-slate-700"
                         >
-                          <FiX size={14} />
+                          <FiX size={12} />
                         </button>
                       </div>
                     ))}
@@ -532,19 +533,19 @@ export default function ProfilePage() {
 
               {/* Modal Alert Message */}
               {message.type === "error" && message.text && (
-                <div className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400">
-                  <FiAlertCircle size={17} />
+                <div className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-medium text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400">
+                  <FiAlertCircle size={15} />
                   {message.text}
                 </div>
               )}
 
               {/* Modal Footer */}
-              <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 dark:border-slate-800 sm:flex-row sm:justify-end">
+              <div className="flex flex-col-reverse gap-2.5 border-t border-slate-100 pt-4 dark:border-slate-800 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={handleCloseEdit}
                   disabled={isSaving}
-                  className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                 >
                   Cancel
                 </button>
@@ -552,16 +553,16 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
                 >
                   {isSaving ? (
                     <>
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                       Saving...
                     </>
                   ) : (
                     <>
-                      <FiSave size={17} />
+                      <FiSave size={15} />
                       Save Changes
                     </>
                   )}
@@ -571,6 +572,6 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

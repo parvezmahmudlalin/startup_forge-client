@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Spinner } from "@heroui/react";
+import { Spinner, Card } from "@heroui/react";
 import { FiBriefcase, FiUsers, FiUserCheck, FiTrendingUp } from "react-icons/fi";
 import { authClient } from "@/lib/auth-client";
 import { serverFetch } from "@/lib/api";
@@ -54,7 +54,7 @@ export default function FounderDashboardOverview() {
   if (!session?.user?.email) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <p className="text-slate-600 dark:text-slate-400">Please login first.</p>
+        <p className="text-default-500">Please login first.</p>
       </div>
     );
   }
@@ -64,54 +64,49 @@ export default function FounderDashboardOverview() {
       title: "Total Opportunities",
       value: stats.totalOpportunities,
       icon: FiBriefcase,
-      color: "text-blue-600 dark:text-blue-400",
-      bgColor: "bg-blue-50 dark:bg-blue-500/10",
-      borderColor: "border-slate-200 dark:border-slate-800",
+      color: "text-primary",
+      bgColor: "bg-primary/10",
     },
     {
       title: "Total Applications",
       value: stats.totalApplications,
       icon: FiUsers,
-      color: "text-amber-600 dark:text-amber-400",
-      bgColor: "bg-amber-50 dark:bg-amber-500/10",
-      borderColor: "border-slate-200 dark:border-slate-800",
+      color: "text-warning",
+      bgColor: "bg-warning/10",
     },
     {
       title: "Accepted Members",
       value: stats.acceptedMembers,
       icon: FiUserCheck,
-      color: "text-emerald-600 dark:text-emerald-400",
-      bgColor: "bg-emerald-50 dark:bg-emerald-500/10",
-      borderColor: "border-slate-200 dark:border-slate-800",
+      color: "text-success",
+      bgColor: "bg-success/10",
     },
   ];
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 p-6">
-      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           Dashboard Overview
         </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+        <p className="mt-1 text-sm text-default-500">
           Welcome back! Here is a summary of your startup's hiring progress.
         </p>
       </div>
 
-      {/* Metrics Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {statCards.map((card, index) => {
           const Icon = card.icon;
           return (
-            <div
+            <Card
               key={index}
-              className={`flex items-center justify-between rounded-xl border ${card.borderColor} bg-white p-6 shadow-sm transition duration-200 hover:scale-[1.01] dark:bg-slate-900`}
+              className="flex flex-row items-center justify-between border border-default-200 bg-content1 p-6 shadow-sm transition duration-200 hover:scale-[1.01] dark:border-default-100"
             >
               <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                <p className="text-sm font-medium text-default-500">
                   {card.title}
                 </p>
-                <h3 className="text-3xl font-bold text-slate-900 dark:text-white">
+                <h3 className="text-3xl font-bold text-foreground">
                   {card.value}
                 </h3>
               </div>
@@ -121,24 +116,23 @@ export default function FounderDashboardOverview() {
               >
                 <Icon size={24} />
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>
 
-      {/* Quick Summary Card */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <Card className="border border-default-200 bg-content1 p-6 shadow-sm dark:border-default-100">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <FiTrendingUp size={20} />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-foreground">
               Recruitment Metrics Summary
             </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <p className="text-sm text-default-500">
               Conversion rate:{" "}
-              <span className="font-semibold text-slate-900 dark:text-white">
+              <span className="font-semibold text-foreground">
                 {stats.totalApplications > 0
                   ? ((stats.acceptedMembers / stats.totalApplications) * 100).toFixed(1)
                   : 0}
@@ -148,7 +142,7 @@ export default function FounderDashboardOverview() {
             </p>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

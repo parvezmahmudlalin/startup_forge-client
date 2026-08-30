@@ -5,6 +5,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 import { HiX } from "react-icons/hi";
+import {
+  HiOutlineChartBar,
+  HiOutlineRocketLaunch,
+  HiOutlinePlusCircle,
+  HiOutlineBriefcase,
+  HiOutlineDocumentCheck,
+  HiOutlineUser,
+  HiOutlineUsers,
+  HiOutlineCreditCard,
+} from "react-icons/hi2";
 
 const DashboardSidebar = ({ isOpen, setIsOpen }) => {
   const { data: session } = authClient.useSession();
@@ -15,24 +25,24 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
 
   const navMenu = {
     founder: [
-      { title: "Overview", href: "/dashboard/founder" },
-      { title: "My Startup", href: "/dashboard/founder/startups" },
-      { title: "Add Opportunity", href: "/dashboard/founder/opportunities/create-opportunity" },
-      { title: "Manage Opportunities", href: "/dashboard/founder/opportunities/manage-opportunity" },
-      { title: "Applications", href: "/dashboard/founder/applications" },
-      { title: "Profile", href: "/dashboard/profile" },
+      { title: "Overview", href: "/dashboard/founder", icon: HiOutlineChartBar },
+      { title: "My Startup", href: "/dashboard/founder/startups", icon: HiOutlineRocketLaunch },
+      { title: "Add Opportunity", href: "/dashboard/founder/opportunities/create-opportunity", icon: HiOutlinePlusCircle },
+      { title: "Manage Opportunities", href: "/dashboard/founder/opportunities/manage-opportunity", icon: HiOutlineBriefcase },
+      { title: "Applications", href: "/dashboard/founder/applications", icon: HiOutlineDocumentCheck },
+      { title: "Profile", href: "/dashboard/profile", icon: HiOutlineUser },
     ],
     collaborator: [
-      { title: "Overview", href: "/dashboard/collaborator" },
-      { title: "My Applications", href: "/dashboard/collaborator/my-applications" },
-      { title: "Profile", href: "/dashboard/profile" },
+      { title: "Overview", href: "/dashboard/collaborator", icon: HiOutlineChartBar },
+      { title: "My Applications", href: "/dashboard/collaborator/my-applications", icon: HiOutlineDocumentCheck },
+      { title: "Profile", href: "/dashboard/profile", icon: HiOutlineUser },
     ],
     admin: [
-      { title: "Overview", href: "/dashboard/admin" },
-      { title: "Manage Users", href: "/dashboard/admin/users" },
-      { title: "Manage Startups", href: "/dashboard/admin/startups" },
-      { title: "Transactions", href: "/dashboard/admin/transactions" },
-      { title: "Profile", href: "/dashboard/profile" },
+      { title: "Overview", href: "/dashboard/admin", icon: HiOutlineChartBar },
+      { title: "Manage Users", href: "/dashboard/admin/users", icon: HiOutlineUsers },
+      { title: "Manage Startups", href: "/dashboard/admin/startups", icon: HiOutlineRocketLaunch },
+      { title: "Transactions", href: "/dashboard/admin/transactions", icon: HiOutlineCreditCard },
+      { title: "Profile", href: "/dashboard/profile", icon: HiOutlineUser },
     ],
   };
 
@@ -40,57 +50,70 @@ const DashboardSidebar = ({ isOpen, setIsOpen }) => {
 
   return (
     <>
-      {/* 🌫️ Mobile Overlay Background */}
+      {/* Mobile Overlay */}
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs transition-opacity lg:hidden"
         />
       )}
 
-      {/* 🖥️ Responsive Sidebar */}
+      {/* Sidebar Container */}
       <aside
-        className={`fixed lg:static top-0 left-0 z-50 w-64 h-full min-h-screen bg-slate-900 text-white p-4 border-r border-slate-800 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 flex h-full min-h-screen w-64 flex-col border-r border-slate-200 bg-white p-4 text-slate-800 transition-transform duration-300 ease-in-out dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 lg:static lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Mobile Close Button */}
-        <div className="flex justify-between items-center lg:hidden mb-4 pb-2 border-b border-slate-800">
-          <span className="text-base font-bold text-white">StartupForge</span>
+        {/* Mobile Close Header */}
+        <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-800 lg:hidden">
+          <span className="text-base font-bold text-slate-900 dark:text-white">
+            StartupForge
+          </span>
           <button
+            type="button"
             onClick={() => setIsOpen(false)}
-            className="p-1 rounded-md text-slate-400 hover:text-white"
+            className="rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            aria-label="Close Sidebar"
           >
-            <HiX className="w-6 h-6" />
+            <HiX className="h-6 w-6" />
           </button>
         </div>
 
         {/* User Info Header */}
-        <div className="mb-6 px-4 py-3 bg-slate-800/60 rounded-xl border border-slate-700/50">
-          <p className="text-xs text-blue-400 font-semibold uppercase tracking-wider">
+        <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-3.5 dark:border-slate-800 dark:bg-slate-800/60">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
             {role} Dashboard
           </p>
-          <p className="text-sm font-medium text-slate-200 truncate mt-0.5">
+          <p className="mt-0.5 truncate text-sm font-semibold text-slate-900 dark:text-white">
             {user?.name || "User"}
           </p>
         </div>
 
         {/* Navigation Links */}
-        <nav className="space-y-1.5">
+        <nav className="flex-1 space-y-1.5">
           {menu.map((item) => {
             const isActive = pathname === item.href;
+            const Icon = item.icon;
+
             return (
               <Link
                 key={item.title}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
-                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 dark:bg-indigo-600 dark:text-white"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                 }`}
               >
-                {item.title}
+                <Icon
+                  className={`h-5 w-5 shrink-0 ${
+                    isActive
+                      ? "text-white"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                />
+                <span>{item.title}</span>
               </Link>
             );
           })}

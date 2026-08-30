@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import React from "react";
-import {  Rocket } from "@gravity-ui/icons";
+import { Rocket } from "@gravity-ui/icons";
 import { 
   FaGithub, 
   FaLinkedin, 
@@ -16,35 +16,34 @@ import { usePathname } from "next/navigation";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-
   const pathname = usePathname();
 
-  if(pathname.includes("dashboard")){
+  if (pathname?.includes("dashboard")) {
     return null;
   }
 
   return (
-    <footer className="border-t border-gray-100 bg-white text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400">
+    <footer className="border-t border-slate-200 bg-white text-slate-600 transition-colors duration-200 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
           
           {/* 1. Logo & Short Bio */}
           <div className="space-y-4 lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2.5 group w-fit">
+            <Link href="/" className="group flex w-fit items-center gap-2.5">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white shadow-md shadow-indigo-500/20 transition-transform group-hover:scale-105">
                 <Rocket className="h-5 w-5" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+              <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                 Startup<span className="text-indigo-600 dark:text-indigo-400">Forge</span>
               </span>
             </Link>
-            <p className="max-w-sm text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+            <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400">
               Connecting visionaries, startup founders, and talented collaborators to build the next generation of revolutionary products.
             </p>
             
-            {/* 3. Social Links */}
+            {/* Social Links */}
             <div className="pt-2">
-              <p className="text-xs font-semibold text-gray-900 dark:text-gray-200 uppercase tracking-wider mb-3">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-200">
                 Connect With Us
               </p>
               <div className="flex items-center gap-3">
@@ -52,7 +51,7 @@ const Footer = () => {
                   href="https://github.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-gray-600 transition-colors hover:bg-indigo-600 hover:text-white dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-indigo-500"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition-colors hover:bg-indigo-600 hover:text-white dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-indigo-500"
                   aria-label="GitHub"
                 >
                   <FaGithub className="h-4 w-4" />
@@ -61,7 +60,7 @@ const Footer = () => {
                   href="https://linkedin.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-gray-600 transition-colors hover:bg-indigo-600 hover:text-white dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-indigo-500"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition-colors hover:bg-indigo-600 hover:text-white dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-indigo-500"
                   aria-label="LinkedIn"
                 >
                   <FaLinkedin className="h-4 w-4" />
@@ -70,7 +69,7 @@ const Footer = () => {
                   href="https://twitter.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-gray-600 transition-colors hover:bg-indigo-600 hover:text-white dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-indigo-500"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition-colors hover:bg-indigo-600 hover:text-white dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-indigo-500"
                   aria-label="Twitter"
                 >
                   <FaTwitter className="h-4 w-4" />
@@ -79,7 +78,7 @@ const Footer = () => {
                   href="https://facebook.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-gray-600 transition-colors hover:bg-indigo-600 hover:text-white dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-indigo-500"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition-colors hover:bg-indigo-600 hover:text-white dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-indigo-500"
                   aria-label="Facebook"
                 >
                   <FaFacebook className="h-4 w-4" />
@@ -90,7 +89,7 @@ const Footer = () => {
 
           {/* 2. Quick Links */}
           <div>
-            <p className="text-sm font-semibold text-gray-900 dark:text-gray-200 uppercase tracking-wider">
+            <p className="text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-200">
               Quick Links
             </p>
             <ul className="mt-4 space-y-2.5 text-sm">
@@ -117,9 +116,9 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Additional Platform Links */}
+          {/* 3. Platform Links */}
           <div>
-            <p className="text-sm font-semibold text-gray-900 dark:text-gray-200 uppercase tracking-wider">
+            <p className="text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-200">
               Platform
             </p>
             <ul className="mt-4 space-y-2.5 text-sm">
@@ -146,24 +145,24 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* 5. Contact Information */}
+          {/* 4. Contact Information */}
           <div>
-            <p className="text-sm font-semibold text-gray-900 dark:text-gray-200 uppercase tracking-wider">
+            <p className="text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-slate-200">
               Contact Info
             </p>
             <ul className="mt-4 space-y-3 text-sm">
               <li className="flex items-start gap-3">
-                <FaEnvelope className="h-4 w-4 mt-1 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                <a href="mailto:support@startupforge.com" className="hover:text-indigo-600 dark:hover:text-indigo-400 truncate">
+                <FaEnvelope className="mt-1 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                <a href="mailto:support@startupforge.com" className="truncate hover:text-indigo-600 dark:hover:text-indigo-400">
                   support@startupforge.com
                 </a>
               </li>
               <li className="flex items-start gap-3">
-                <FaPhoneAlt className="h-4 w-4 mt-1 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                <FaPhoneAlt className="mt-1 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
                 <span>+1 (800) 123-4567</span>
               </li>
               <li className="flex items-start gap-3">
-                <FaMapMarkerAlt className="h-4 w-4 mt-1 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                <FaMapMarkerAlt className="mt-1 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
                 <span>Innovation Hub, Silicon Valley, CA</span>
               </li>
             </ul>
@@ -171,8 +170,8 @@ const Footer = () => {
 
         </div>
 
-        {/* 4. Copyright & Bottom Section */}
-        <div className="mt-12 border-t border-gray-100 pt-8 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500 dark:text-gray-400">
+        {/* 5. Copyright & Bottom Section */}
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-8 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400 sm:flex-row">
           <p>© {currentYear} StartupForge. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <Link href="#" className="hover:text-indigo-600 dark:hover:text-indigo-400">
