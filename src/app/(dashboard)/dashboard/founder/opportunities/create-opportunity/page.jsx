@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Spinner } from "@heroui/react";
-import { X } from "lucide-react";
+import { X, AlertCircle } from "lucide-react";
 
 import { serverFetch, serverMutation } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
@@ -78,12 +78,17 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
           fetchedStartups = res.data;
         }
 
-        setStartups(fetchedStartups);
+        // 🟢 শুধুমাত্র Admin দ্বারা "approved" হওয়া স্টার্টআপগুলোকে ফিল্টার করা
+        const approvedOnly = fetchedStartups.filter(
+          (s) => s.status?.toLowerCase() === "approved"
+        );
 
-        if (fetchedStartups.length > 0) {
+        setStartups(approvedOnly);
+
+        if (approvedOnly.length > 0) {
           setFormData((prev) => ({
             ...prev,
-            startupId: fetchedStartups[0]._id,
+            startupId: approvedOnly[0]._id,
           }));
         }
       } catch (err) {
@@ -114,7 +119,7 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
     }
 
     if (!formData.startupId) {
-      return "Please select a startup.";
+      return "Please select an approved startup.";
     }
 
     if (!formData.roleTitle.trim()) {
@@ -220,7 +225,7 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
           </h2>
 
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Create a new opportunity for your startup.
+            Create a new opportunity for your approved startup.
           </p>
         </div>
 
@@ -245,7 +250,20 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
                 </div>
               )}
 
-              {/* Startup */}
+              {/* Warning Notice if no approved startup is available */}
+              {startups.length === 0 && (
+                <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900/50 p-4 text-xs text-amber-800 dark:text-amber-300">
+                  <AlertCircle size={18} className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+                  <div>
+                    <p className="font-semibold">No approved startups found!</p>
+                    <p className="mt-1">
+                      You can only post opportunities for startups approved by the Admin. If you recently created a startup, please wait for Admin approval.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Startup Selection Dropdown */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
                   Select Startup{" "}
@@ -262,7 +280,7 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
                 >
                   {startups.length === 0 ? (
                     <option value="" disabled>
-                      No startup found. Please create one first.
+                      No approved startup available
                     </option>
                   ) : (
                     startups.map((startup) => (
@@ -277,7 +295,7 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
                 </select>
               </div>
 
-              {/* Role */}
+              {/* Role Title */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
                   Role Title{" "}
@@ -288,10 +306,11 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
                   type="text"
                   placeholder="e.g. Senior React Developer"
                   value={formData.roleTitle}
+                  disabled={startups.length === 0}
                   onChange={(e) =>
                     handleChange("roleTitle", e.target.value)
                   }
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 />
               </div>
 
@@ -306,13 +325,14 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
                   type="text"
                   placeholder="React, Node.js, MongoDB"
                   value={formData.requiredSkills}
+                  disabled={startups.length === 0}
                   onChange={(e) =>
                     handleChange(
                       "requiredSkills",
                       e.target.value
                     )
                   }
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 />
 
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -328,10 +348,11 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
 
                 <select
                   value={formData.workType}
+                  disabled={startups.length === 0}
                   onChange={(e) =>
                     handleChange("workType", e.target.value)
                   }
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 >
                   {WORK_TYPES.map((type) => (
                     <option key={type} value={type}>
@@ -349,13 +370,14 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
 
                 <select
                   value={formData.commitmentLevel}
+                  disabled={startups.length === 0}
                   onChange={(e) =>
                     handleChange(
                       "commitmentLevel",
                       e.target.value
                     )
                   }
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 >
                   {COMMITMENT_LEVELS.map((level) => (
                     <option key={level} value={level}>
@@ -375,10 +397,11 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
                 <input
                   type="date"
                   value={formData.deadline}
+                  disabled={startups.length === 0}
                   onChange={(e) =>
                     handleChange("deadline", e.target.value)
                   }
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark]"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 dark:[color-scheme:dark] disabled:opacity-50"
                 />
               </div>
 
@@ -403,7 +426,7 @@ export default function AddOpportunityModal({ isOpen = true, onClose }) {
                     !session?.user?.email ||
                     startups.length === 0
                   }
-                  className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+                  className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading
                     ? "Creating..."

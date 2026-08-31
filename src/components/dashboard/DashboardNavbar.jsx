@@ -20,7 +20,9 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
   const { data: session, isPending: authLoading } = authClient.useSession();
   const user = session?.user;
   const userEmail = user?.email || "";
-  const userRole = user?.role || "collaborator";
+  
+  // Role Case Normalized
+  const userRole = (user?.role || "collaborator").toLowerCase();
 
   // STATES
   const [notifications, setNotifications] = useState([]);
@@ -43,17 +45,16 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
         `/api/notifications?email=${email}&role=${role}`
       );
 
+      let fetchedList = [];
       if (Array.isArray(data)) {
-        setNotifications(data);
-        return;
+        fetchedList = data;
+      } else if (Array.isArray(data?.notifications)) {
+        fetchedList = data.notifications;
+      } else if (Array.isArray(data?.data)) {
+        fetchedList = data.data;
       }
 
-      if (Array.isArray(data?.notifications)) {
-        setNotifications(data.notifications);
-        return;
-      }
-
-      setNotifications([]);
+      setNotifications(fetchedList);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
       setNotifications([]);
@@ -70,46 +71,49 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
 
     const interval = setInterval(() => {
       fetchNotifications();
-    }, 30000);
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [authLoading, userEmail, fetchNotifications]);
 
-  // UNREAD NOTIFICATION
-  const unreadCount = notifications.filter(
-    (notification) =>
-      notification.unread === true || notification.read === false
-  ).length;
+  // UNREAD NOTIFICATION CHECK (isRead/read/unread সহ সব চেক)
+  const unreadCount = notifications.filter((notification) => {
+    if (typeof notification.isRead === "boolean") return !notification.isRead;
+    if (typeof notification.unread === "boolean") return notification.unread;
+    if (typeof notification.read === "boolean") return !notification.read;
+    return true; 
+  }).length;
 
   const hasUnread = unreadCount > 0;
 
-  // MARK ALL AS READ
+  // MARK ALL AS READ (আইকন থেকে ব্লু ডট সরাতে)
   const markAllAsRead = async () => {
     if (!userEmail || markingAsRead || !hasUnread) return;
 
     try {
       setMarkingAsRead(true);
 
+      // 🟢 ১. সাথে সাথে ফ্রন্টএন্ড স্টেট আপডেট করুন যাতে নীল ডট তাৎক্ষণিক গায়েব হয়ে যায়
       setNotifications((prev) =>
         prev.map((notification) => ({
           ...notification,
           unread: false,
           read: true,
+          isRead: true,
         }))
       );
 
       const email = encodeURIComponent(userEmail);
-      const role = encodeURIComponent(userRole);
 
+      // 🟢 ২. ব্যাকএন্ডের query params অনুযায়ী ইমেইল পাঠিয়ে কল করুন
       await serverMutation(
-        `/api/notifications?email=${email}&role=${role}`,
+        `/api/notifications?email=${email}`,
         "PATCH",
-        {}
+        { email: userEmail }
       );
-
-      await fetchNotifications();
     } catch (error) {
       console.error("Failed to mark notifications as read:", error);
+      // ব্যর্থ হলে ডাটা আবার রিফেচ করা হবে
       await fetchNotifications();
     } finally {
       setMarkingAsRead(false);
@@ -151,9 +155,9 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
     }
   };
 
-  // ROLE LABEL
+  // ROLE LABEL FOR DISPLAY
   const getRoleLabel = () => {
-    switch (userRole?.toLowerCase()) {
+    switch (userRole) {
       case "founder":
         return "Founder";
       case "admin":
@@ -161,7 +165,7 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
       case "collaborator":
         return "Collaborator";
       default:
-        return userRole || "Collaborator";
+        return userRole.charAt(0).toUpperCase() + userRole.slice(1);
     }
   };
 
@@ -220,8 +224,16 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
               <div
                 className="relative rounded-xl p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
                 aria-label="Notifications"
+                onClick={() => {
+                  // ড্রপডাউন ওপেন করলেই যদি আনরিড থাকে তবে তা 'Mark all read' হিসেবে আপডেট হবে
+                  if (hasUnread) {
+                    markAllAsRead();
+                  }
+                }}
               >
                 <FaBell className="h-5 w-5" />
+                
+                {/* 🔵 নীল ডট কেবল Unread নোটিফিকেশন থাকলেই দেখাবে */}
                 {hasUnread && (
                   <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 animate-pulse rounded-full bg-indigo-600 ring-2 ring-white dark:ring-slate-900" />
                 )}
@@ -278,6 +290,7 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
                   <div className="divide-y divide-slate-100 dark:divide-slate-800">
                     {notifications.map((notification) => {
                       const isUnread =
+                        notification.isRead === false ||
                         notification.unread === true ||
                         notification.read === false;
 
