@@ -17,12 +17,21 @@ export default function AdminDashboard({ session }) {
 
     async function fetchDashboardStats() {
       try {
-        const data = await serverFetch("/api/admin/stats");
-        if (isMounted && data) {
+        const res = await serverFetch("/api/admin/stats");
+        
+        // 🟢 res.success এবং res.stats চেক করে ডাটা সঠিকভাবে সেভ করা
+        if (isMounted && res?.success && res?.stats) {
+          const apiStats = res.stats;
+          
+          // Pending = Total Startups - Total Approved
+          const totalStartups = apiStats.totalStartups || 0;
+          const totalApproved = apiStats.totalApproved || 0;
+          const pendingCount = Math.max(0, totalStartups - totalApproved);
+
           setStats({
-            totalUsers: data.totalUsers ?? 0,
-            pendingStartups: data.pendingStartups ?? 0,
-            systemStatus: data.systemStatus || "Healthy",
+            totalUsers: apiStats.totalUsers || 0,
+            pendingStartups: pendingCount,
+            systemStatus: "Healthy",
           });
         }
       } catch (error) {

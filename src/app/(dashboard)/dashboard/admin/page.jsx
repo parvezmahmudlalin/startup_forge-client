@@ -35,9 +35,7 @@ export default function AdminOverviewPage() {
       setLoading(true);
       setError("");
 
-      const res = await serverFetch(
-        "/api/admin/stats"
-      );
+      const res = await serverFetch("/api/admin/stats");
 
       if (res?.success) {
         setStats(
@@ -50,16 +48,11 @@ export default function AdminOverviewPage() {
           }
         );
       } else {
-        setError(
-          res?.message ||
-            "Failed to load statistics."
-        );
+        setError(res?.message || "Failed to load statistics.");
       }
     } catch (error) {
       console.error(error);
-      setError(
-        "Something went wrong while loading statistics."
-      );
+      setError("Something went wrong while loading statistics.");
     } finally {
       setLoading(false);
     }
@@ -78,31 +71,25 @@ export default function AdminOverviewPage() {
       title: "Total Users",
       value: stats.totalUsers,
       icon: Users,
-      iconClass:
-        "bg-blue-500/10 text-blue-500",
+      iconClass: "bg-blue-500/10 text-blue-500",
     },
     {
       title: "Total Startups",
       value: stats.totalStartups,
       icon: Rocket,
-      iconClass:
-        "bg-violet-500/10 text-violet-500",
+      iconClass: "bg-violet-500/10 text-violet-500",
     },
     {
       title: "Total Opportunities",
       value: stats.totalOpportunities,
       icon: BriefcaseBusiness,
-      iconClass:
-        "bg-orange-500/10 text-orange-500",
+      iconClass: "bg-orange-500/10 text-orange-500",
     },
     {
       title: "Total Revenue",
-      value: `৳${Number(
-        stats.totalRevenue || 0
-      ).toLocaleString()}`,
+      value: `$${Number(stats.totalRevenue || 0).toLocaleString()}`,
       icon: DollarSign,
-      iconClass:
-        "bg-emerald-500/10 text-emerald-500",
+      iconClass: "bg-emerald-500/10 text-emerald-500",
     },
   ];
 
@@ -111,19 +98,12 @@ export default function AdminOverviewPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2">
-          <ShieldCheck
-            size={24}
-            className="text-primary"
-          />
-
-          <h1 className="text-2xl font-bold">
-            Admin Overview
-          </h1>
+          <ShieldCheck size={24} className="text-primary" />
+          <h1 className="text-2xl font-bold">Admin Overview</h1>
         </div>
 
         <p className="mt-1 text-sm text-default-500">
-          Monitor and manage StartupForge platform
-          activity.
+          Monitor and manage StartupForge platform activity.
         </p>
       </div>
 
@@ -146,18 +126,11 @@ export default function AdminOverviewPage() {
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-default-500">
-                    {card.title}
-                  </p>
-
-                  <h2 className="mt-2 text-3xl font-bold">
-                    {card.value}
-                  </h2>
+                  <p className="text-sm text-default-500">{card.title}</p>
+                  <h2 className="mt-2 text-3xl font-bold">{card.value}</h2>
                 </div>
 
-                <div
-                  className={`rounded-xl p-3 ${card.iconClass}`}
-                >
+                <div className={`rounded-xl p-3 ${card.iconClass}`}>
                   <Icon size={23} />
                 </div>
               </div>
@@ -180,13 +153,8 @@ export default function AdminOverviewPage() {
             </div>
 
             <div>
-              <p className="text-sm text-default-500">
-                Approved Startups
-              </p>
-
-              <p className="text-2xl font-bold">
-                {stats.totalApproved}
-              </p>
+              <p className="text-sm text-default-500">Approved Startups</p>
+              <p className="text-2xl font-bold">{stats.totalApproved}</p>
             </div>
           </div>
 
@@ -198,18 +166,14 @@ export default function AdminOverviewPage() {
                   stats.totalStartups > 0
                     ? `${Math.min(
                         100,
-                        (stats.totalApproved /
-                          stats.totalStartups) *
-                          100
+                        (stats.totalApproved / stats.totalStartups) * 100
                       )}%`
                     : "0%",
               }}
             />
           </div>
 
-          <p className="mt-2 text-xs text-default-500">
-            Approved startup ratio
-          </p>
+          <p className="mt-2 text-xs text-default-500">Approved startup ratio</p>
         </div>
 
         <div className="rounded-2xl border border-default-200 bg-content1 p-6 dark:border-default-100">
@@ -219,20 +183,15 @@ export default function AdminOverviewPage() {
             </div>
 
             <div>
-              <p className="text-sm text-default-500">
-                StartupForge Activity
-              </p>
-
+              <p className="text-sm text-default-500">StartupForge Activity</p>
               <p className="text-2xl font-bold">
-                {stats.totalStartups +
-                  stats.totalOpportunities}
+                {stats.totalStartups + stats.totalOpportunities}
               </p>
             </div>
           </div>
 
           <p className="mt-5 text-sm text-default-500">
-            Total startups and opportunities currently
-            available on the platform.
+            Total startups and opportunities currently available on the platform.
           </p>
         </div>
       </div>
