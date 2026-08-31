@@ -1,6 +1,71 @@
-import Link from "next/link";
+"use client";
 
-export default function FeaturedOpportunities({ opportunities = [] }) {
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Spinner } from "@heroui/react";
+import { serverFetch } from "@/lib/api";
+
+export default function FeaturedOpportunities({ opportunities: initialOpportunities }) {
+  const [opportunities, setOpportunities] = useState(initialOpportunities || []);
+  const [loading, setLoading] = useState(!initialOpportunities);
+
+  // 🟢 Helper Function to filter active (non-expired) opportunities
+  const filterActiveOpportunities = (list) => {
+    if (!Array.isArray(list)) return [];
+
+    const today = new Date();
+    // আজকের দিনের শুরুর সময় সেট করা (00:00:00) যাতে আজকের দিনে ডেডলাইন থাকা আইটেমগুলোও শো করে
+    today.setHours(0, 0, 0, 0);
+
+    return list.filter((item) => {
+      if (!item.deadline) return true; // ডেডলাইন দেওয়া না থাকলে শো করবে
+
+      const deadlineDate = new Date(item.deadline);
+      // যদি ডেডলাইন ভ্যালিড ডেট হয় এবং আজ বা আজকের পর হয়, তবেই শো করবে
+      return !isNaN(deadlineDate.getTime()) && deadlineDate >= today;
+    });
+  };
+
+  // 🟢 Dynamic Opportunities Fetcher
+  useEffect(() => {
+    if (initialOpportunities && initialOpportunities.length > 0) {
+      setOpportunities(filterActiveOpportunities(initialOpportunities));
+      setLoading(false);
+      return;
+    }
+
+    const fetchOpportunities = async () => {
+      try {
+        setLoading(true);
+
+        const res = await serverFetch("/api/opportunities");
+
+        if (res?.error) {
+          console.warn(res.message || "Failed to fetch opportunities");
+          setOpportunities([]);
+          return;
+        }
+
+        let fetchedData = [];
+        if (Array.isArray(res)) {
+          fetchedData = res;
+        } else if (res?.data && Array.isArray(res.data)) {
+          fetchedData = res.data;
+        }
+
+        // 🟢 শুধুমাত্র যেসব ডেডলাইন পার হয়নি সেগুলো ফিল্টার করে রাখা
+        setOpportunities(filterActiveOpportunities(fetchedData));
+      } catch (error) {
+        console.error("Failed to fetch featured opportunities:", error);
+        setOpportunities([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOpportunities();
+  }, [initialOpportunities]);
+
   // DATE FORMATTER HELPER
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -30,6 +95,8 @@ export default function FeaturedOpportunities({ opportunities = [] }) {
               Apply to open roles and join dynamic teams
             </p>
           </div>
+
+          {/* 🟢 Public Page Link */}
           <Link
             href="/browse-opportunities"
             className="inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
@@ -39,17 +106,23 @@ export default function FeaturedOpportunities({ opportunities = [] }) {
           </Link>
         </div>
 
-        {/* CONTENT GRID / EMPTY STATE */}
-        {!opportunities || opportunities.length === 0 ? (
+        {/* LOADING STATE */}
+        {loading ? (
+          <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+            <Spinner size="md" />
+          </div>
+        ) : !opportunities || opportunities.length === 0 ? (
+          /* EMPTY STATE */
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900/50">
             <p className="text-base font-semibold text-slate-700 dark:text-slate-300">
-              No opportunities available right now
+              No active opportunities available right now
             </p>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Check back later for new openings.
             </p>
           </div>
         ) : (
+          /* CONTENT GRID (SHOWS MAXIMUM 3 ACTIVE ITEMS) */
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {opportunities.slice(0, 3).map((item) => {
               const skills = Array.isArray(item.required_skills)
@@ -59,18 +132,23 @@ export default function FeaturedOpportunities({ opportunities = [] }) {
                 : [];
 
               const opportunityId = item._id || item.id;
+              const startupName =
+                item.startup_name ||
+                item.startup_details?.startup_name ||
+                "Startup Name";
 
               return (
-                <div
+                <Link
                   key={opportunityId}
-                  className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+                  href={`/browse-opportunities/${opportunityId}`}
+                  className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
                 >
                   <div>
-                    <h3 className="line-clamp-1 text-lg font-bold text-slate-900 dark:text-white sm:text-xl">
+                    <h3 className="line-clamp-1 text-lg font-bold text-slate-900 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400 sm:text-xl">
                       {item.role_title || "Untitled Role"}
                     </h3>
                     <p className="mt-1 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-                      {item.startup_name || "Startup Name"}
+                      {startupName}
                     </p>
 
                     {/* SKILLS */}
@@ -99,7 +177,7 @@ export default function FeaturedOpportunities({ opportunities = [] }) {
                       {formatDate(item.deadline)}
                     </span>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
