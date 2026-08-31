@@ -3,16 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Spinner } from "@heroui/react";
-import { Rocket } from "lucide-react";
+import { Rocket, Upload, CheckCircle2, X } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { serverMutation } from "@/lib/api";
+import { imageUploader } from "@/lib/imageUploader";
 
 export default function CreateStartupForm() {
   const router = useRouter();
-
   const { data: session, isPending: authLoading } = authClient.useSession();
 
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
 
   const [formData, setFormData] = useState({
     startup_name: "",
@@ -28,6 +30,39 @@ export default function CreateStartupForm() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  // 🟢 Image File Selection & Upload Handler
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      setImageFile(file);
+      
+      // ImgBB-তে ইমেজ আপলোড
+      const uploadedUrl = await imageUploader(file);
+      
+      if (uploadedUrl) {
+        setFormData((prev) => ({
+          ...prev,
+          logo: uploadedUrl,
+        }));
+      }
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      alert(error?.message || "Failed to upload image.");
+      setImageFile(null);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // 🟢 Remove Uploaded Image
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setFormData((prev) => ({ ...prev, logo: "" }));
   };
 
   const handleSubmit = async (e) => {
@@ -59,7 +94,7 @@ export default function CreateStartupForm() {
         founder_email: session.user.email.trim(),
       };
 
-      // ১. প্রথমে চেক ব্যাকএন্ডে রিকোয়েস্ট পাঠানো হবে (লিমিট ও পেমেন্ট চেক করতে)
+      // ১. পেমেন্ট ও লিমিট চেক
       const checkRes = await serverMutation(
         "/api/payment/create-checkout-session",
         "POST",
@@ -69,7 +104,7 @@ export default function CreateStartupForm() {
         }
       );
 
-      // ২. ৩টির বেশি স্টার্টআপ থাকলে Stripe পেমেন্ট পেজে রিডাইরেক্ট করবে
+      // ২. ৩টির বেশি স্টার্টআপ থাকলে Stripe-এ রিডাইরেক্ট
       if (checkRes?.requiresPayment && checkRes?.checkoutUrl) {
         alert(
           "You have reached your free limit (3 startups). Redirecting to Stripe for payment..."
@@ -78,7 +113,7 @@ export default function CreateStartupForm() {
         return;
       }
 
-      // ৩. ৩টি বা তার কম স্টার্টআপ থাকলে সরাসরি ক্রিয়েট হবে
+      // ৩. সরাসরি ক্রিয়েট
       if (checkRes?.requiresPayment === false) {
         const result = await serverMutation(
           "/api/founder/startup",
@@ -183,19 +218,84 @@ export default function CreateStartupForm() {
           </select>
         </div>
 
+        {/* 🟢 Logo Field with Live Image Preview */}
         <div>
           <label className="mb-2 block text-sm font-medium text-foreground">
-            Logo URL (Optional)
+            Logo (Upload File or Enter URL)
           </label>
-          <input
-            type="url"
-            name="logo"
-            value={formData.logo}
-            onChange={handleChange}
-            placeholder="https://example.com/logo.png"
-            disabled={loading}
-            className="w-full rounded-xl border border-default-200 bg-content2 px-4 py-2.5 text-sm text-foreground placeholder:text-default-400 outline-none transition focus:border-primary disabled:cursor-not-allowed disabled:opacity-60 dark:border-default-100"
-          />
+          
+          <div className="space-y-3">
+            {/* 📸 Live Image Preview Section */}
+            {formData.logo && (
+              <div className="flex items-center gap-4 rounded-xl border border-default-200 bg-content2 p-3 dark:border-default-100">
+                <img
+                  src={formData.logo}
+                  alt="Logo Preview"
+                  className="h-16 w-16 rounded-lg object-cover border border-default-300"
+                  onError={(e) => {
+                    // Image URL এরর দিলে হাইড বা ফলব্যাক সেট করবে
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+                <div className="flex-1 overflow-hidden">
+                  <p className="text-xs font-semibold text-success flex items-center gap-1">
+                    <CheckCircle2 size={14} /> Logo Loaded Successfully
+                  </p>
+                  <p className="truncate text-xs text-default-400">
+                    {formData.logo}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="rounded-full p-1.5 text-default-400 hover:bg-danger/10 hover:text-danger transition"
+                  title="Remove Logo"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+
+            {/* File Upload Box */}
+            <div className="relative flex items-center justify-center rounded-xl border-2 border-dashed border-default-300 bg-content2 p-4 transition hover:border-primary">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                disabled={loading || uploadingImage}
+                className="absolute inset-0 cursor-pointer opacity-0 disabled:cursor-not-allowed"
+              />
+              <div className="flex items-center gap-2 text-sm text-default-600">
+                {uploadingImage ? (
+                  <>
+                    <Spinner size="sm" />
+                    <span>Uploading image to ImgBB...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={18} />
+                    <span>Click or drag image file to upload</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="relative flex items-center justify-center">
+              <span className="bg-content1 px-2 text-xs text-default-400">OR</span>
+            </div>
+
+            {/* Direct Image URL Input */}
+            <input
+              type="url"
+              name="logo"
+              value={formData.logo}
+              onChange={handleChange}
+              placeholder="https://example.com/logo.png"
+              disabled={loading || uploadingImage}
+              className="w-full rounded-xl border border-default-200 bg-content2 px-4 py-2.5 text-sm text-foreground placeholder:text-default-400 outline-none transition focus:border-primary disabled:cursor-not-allowed disabled:opacity-60 dark:border-default-100"
+            />
+          </div>
         </div>
 
         <div>
@@ -216,7 +316,7 @@ export default function CreateStartupForm() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || uploadingImage}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 font-semibold text-primary-foreground shadow-md transition hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
