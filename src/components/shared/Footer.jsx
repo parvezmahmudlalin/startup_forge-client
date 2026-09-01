@@ -159,11 +159,11 @@ const Footer = () => {
               </li>
               <li className="flex items-start gap-3">
                 <FaPhoneAlt className="mt-1 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
-                <span>+1 (800) 123-4567</span>
+                <span>+880 01727594503</span>
               </li>
               <li className="flex items-start gap-3">
                 <FaMapMarkerAlt className="mt-1 h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
-                <span>Innovation Hub, Silicon Valley, CA</span>
+                <span>Mymensingh, Bangladesh</span>
               </li>
             </ul>
           </div>

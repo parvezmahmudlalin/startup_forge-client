@@ -1,7 +1,20 @@
+import { authClient } from "@/lib/auth-client"; // 🟢 Better-Auth Client Import
+
 const baseUrl = (
   process.env.NEXT_PUBLIC_SERVER_URL ||
   "http://localhost:5000"
 ).replace(/\/$/, "");
+
+// Helper to get JWT token dynamically
+const getAuthHeaders = async () => {
+  try {
+    const { data } = await authClient.token();
+    const token = data?.token;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch (error) {
+    return {};
+  }
+};
 
 // =====================================================
 // GET
@@ -12,11 +25,17 @@ export const serverFetch = async (
   options = {}
 ) => {
   try {
+    const authHeaders = await getAuthHeaders(); // 🟢 Token fetched
+
     const res = await fetch(
       `${baseUrl}${path}`,
       {
         cache: "no-store",
         ...options,
+        headers: {
+          ...authHeaders, // 🟢 Auth Header inject
+          ...options.headers,
+        },
       }
     );
 
@@ -74,10 +93,13 @@ export const serverMutation = async (
   customHeaders = {}
 ) => {
   try {
+    const authHeaders = await getAuthHeaders(); // 🟢 Token fetched
+
     const options = {
       method,
       headers: {
         "Content-Type": "application/json",
+        ...authHeaders, // 🟢 Auth Header inject
         ...customHeaders,
       },
     };
