@@ -24,13 +24,13 @@ export default function HeroBanner() {
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
           <Link
-            href="/browse-opportunities"
+            href="/opportunities"
             className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-indigo-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all duration-200 hover:bg-indigo-700 hover:shadow-indigo-600/35 active:scale-[0.98] dark:bg-indigo-600 dark:hover:bg-indigo-500"
           >
             Explore Opportunities
           </Link>
           <Link
-            href="/browse-startups"
+            href="/startups"
             className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-8 py-3.5 text-base font-semibold text-slate-700 transition-all duration-200 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 active:scale-[0.98]"
           >
             Browse Startups

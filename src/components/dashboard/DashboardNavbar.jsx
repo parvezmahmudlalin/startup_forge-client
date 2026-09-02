@@ -7,20 +7,19 @@ import { Avatar, Dropdown, Label } from "@heroui/react";
 import { BiLogOut } from "react-icons/bi";
 import { CgProfile } from "react-icons/cg";
 import { FaBell, FaCheckDouble } from "react-icons/fa6";
-import { HiHandRaised, HiArrowLeft } from "react-icons/hi2";
-import { HiMenuAlt2, HiX } from "react-icons/hi";
+import { HiOutlineHome } from "react-icons/hi2";
 
 import { authClient } from "@/lib/auth-client";
 import { serverFetch, serverMutation } from "@/lib/api";
 
-const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
+const DashboardNavbar = () => {
   const router = useRouter();
 
   // AUTH SESSION
   const { data: session, isPending: authLoading } = authClient.useSession();
   const user = session?.user;
   const userEmail = user?.email || "";
-  
+
   // Role Case Normalized
   const userRole = (user?.role || "collaborator").toLowerCase();
 
@@ -76,24 +75,23 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
     return () => clearInterval(interval);
   }, [authLoading, userEmail, fetchNotifications]);
 
-  // UNREAD NOTIFICATION CHECK (isRead/read/unread সহ সব চেক)
+  // UNREAD NOTIFICATION CHECK
   const unreadCount = notifications.filter((notification) => {
     if (typeof notification.isRead === "boolean") return !notification.isRead;
     if (typeof notification.unread === "boolean") return notification.unread;
     if (typeof notification.read === "boolean") return !notification.read;
-    return true; 
+    return true;
   }).length;
 
   const hasUnread = unreadCount > 0;
 
-  // MARK ALL AS READ (আইকন থেকে ব্লু ডট সরাতে)
+  // MARK ALL AS READ
   const markAllAsRead = async () => {
     if (!userEmail || markingAsRead || !hasUnread) return;
 
     try {
       setMarkingAsRead(true);
 
-      // 🟢 ১. সাথে সাথে ফ্রন্টএন্ড স্টেট আপডেট করুন যাতে নীল ডট তাৎক্ষণিক গায়েব হয়ে যায়
       setNotifications((prev) =>
         prev.map((notification) => ({
           ...notification,
@@ -105,7 +103,6 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
 
       const email = encodeURIComponent(userEmail);
 
-      // 🟢 ২. ব্যাকএন্ডের query params অনুযায়ী ইমেইল পাঠিয়ে কল করুন
       await serverMutation(
         `/api/notifications?email=${email}`,
         "PATCH",
@@ -113,7 +110,6 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
       );
     } catch (error) {
       console.error("Failed to mark notifications as read:", error);
-      // ব্যর্থ হলে ডাটা আবার রিফেচ করা হবে
       await fetchNotifications();
     } finally {
       setMarkingAsRead(false);
@@ -173,28 +169,11 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900">
       <div className="flex items-center justify-between px-4 py-3 sm:px-6">
         
-        {/* LEFT SECTION */}
+        {/* LEFT SECTION (Emoji সরানো হয়েছে) */}
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className="rounded-xl bg-slate-100 p-2 text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 lg:hidden"
-            aria-label="Toggle Menu"
-          >
-            {isMobileOpen ? (
-              <HiX className="h-6 w-6" />
-            ) : (
-              <HiMenuAlt2 className="h-6 w-6" />
-            )}
-          </button>
-
           <div>
-            <h2 className="flex items-center gap-1.5 text-base font-bold leading-tight text-slate-900 dark:text-white sm:text-lg">
-              <span>
-                Welcome back,{" "}
-                {user?.name ? user.name.split(" ")[0] : "User"}!
-              </span>
-              <HiHandRaised className="inline-block h-4 w-4 rotate-12 text-amber-500 sm:h-5 sm:w-5" />
+            <h2 className="text-base font-bold leading-tight text-slate-900 dark:text-white sm:text-lg">
+              Welcome back, {user?.name ? user.name.split(" ")[0] : "User"}!
             </h2>
 
             <p className="mt-0.5 text-xs capitalize text-slate-500 dark:text-slate-400">
@@ -208,13 +187,13 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
         {/* RIGHT SECTION */}
         <div className="flex items-center gap-2 sm:gap-3">
           
-          {/* BACK TO HOME LINK */}
+          {/* BACK TO HOME LINK (Home/House Icon সহ) */}
           <Link
             href="/"
             className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
             title="Back to Home"
           >
-            <HiArrowLeft className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            <HiOutlineHome className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
             <span className="hidden sm:inline">Back to Home</span>
           </Link>
 
@@ -225,7 +204,6 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
                 className="relative rounded-xl p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
                 aria-label="Notifications"
                 onClick={() => {
-                  // ড্রপডাউন ওপেন করলেই যদি আনরিড থাকে তবে তা 'Mark all read' হিসেবে আপডেট হবে
                   if (hasUnread) {
                     markAllAsRead();
                   }
@@ -233,7 +211,6 @@ const DashboardNavbar = ({ isMobileOpen, setIsMobileOpen }) => {
               >
                 <FaBell className="h-5 w-5" />
                 
-                {/* 🔵 নীল ডট কেবল Unread নোটিফিকেশন থাকলেই দেখাবে */}
                 {hasUnread && (
                   <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 animate-pulse rounded-full bg-indigo-600 ring-2 ring-white dark:ring-slate-900" />
                 )}

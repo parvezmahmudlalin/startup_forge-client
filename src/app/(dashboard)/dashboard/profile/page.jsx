@@ -15,6 +15,7 @@ import {
   FiX,
   FiCheckCircle,
   FiAlertCircle,
+  FiLogOut,
 } from "react-icons/fi";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
@@ -33,6 +34,7 @@ export default function ProfilePage() {
   // Modal States
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   // Edit Form States
   const [editName, setEditName] = useState("");
@@ -55,6 +57,22 @@ export default function ProfilePage() {
     setBio(user.bio || "");
     setSkills(Array.isArray(user.skills) ? user.skills : []);
   }, [user]);
+
+  // Handle Sign Out
+  const handleSignOut = async () => {
+    try {
+      setIsSigningOut(true);
+      await authClient.signOut();
+    } catch (error) {
+      console.error("Sign out error:", error);
+      setMessage({
+        type: "error",
+        text: "Failed to sign out. Please try again.",
+      });
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
 
   // Open Edit Modal
   const handleOpenEdit = () => {
@@ -317,7 +335,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Skills */}
-        <div className="p-6 sm:p-8">
+        <div className="border-b border-slate-100 p-6 dark:border-slate-800 sm:p-8">
           <h3 className="mb-3 text-base font-bold text-slate-900 dark:text-white">
             Skills
           </h3>
@@ -337,6 +355,38 @@ export default function ProfilePage() {
               No skills added yet.
             </p>
           )}
+        </div>
+
+        {/* Sign Out Section */}
+        <div className="bg-slate-50/50 p-6 dark:bg-slate-900/50 sm:p-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+                Account Session
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Sign out of your account on this device.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              disabled={isSigningOut}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50/50 px-4 py-2.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-100 hover:text-rose-700 disabled:opacity-50 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20"
+            >
+              {isSigningOut ? (
+                <>
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-rose-600 border-t-transparent dark:border-rose-400" />
+                  Signing out...
+                </>
+              ) : (
+                <>
+                  <FiLogOut size={15} />
+                  Sign Out
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

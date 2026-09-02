@@ -2,47 +2,59 @@
 
 import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { serverFetch } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
 
 export default function StartupDetailsPage({ params }) {
   const resolvedParams = use(params);
   const startupId = resolvedParams?.id;
 
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Auth Session Hook
+  const { data: session, isPending: isAuthLoading } = authClient.useSession();
+  const user = session?.user;
+
   const [startup, setStartup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // 🟢 Authentication Guard Logic
   useEffect(() => {
-    if (startupId) {
+    if (!isAuthLoading && !user) {
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+    }
+  }, [user, isAuthLoading, router, pathname]);
+
+  // Fetch Startup Data
+  useEffect(() => {
+    if (startupId && user) {
       fetchStartupDetails();
     }
-  }, [startupId]);
+  }, [startupId, user]);
 
   const fetchStartupDetails = async () => {
     try {
       setLoading(true);
       setError("");
 
-      // 1st Attempt: /api/startup/:id
       let res = await serverFetch(`/api/startup/${startupId}`);
 
-      // Fallback Attempt: /startup/:id (যদি /api ছাড়া কনফিগার করা থাকে)
       if (typeof res === "string" && res.includes("Cannot GET")) {
         res = await serverFetch(`/startup/${startupId}`);
       }
 
-      // Fallback Attempt 2: /api/startups/:id
       if (typeof res === "string" && res.includes("Cannot GET")) {
         res = await serverFetch(`/api/startups/${startupId}`);
       }
 
-      // যদি ব্যাকএন্ড 404 HTML পাঠায়
       if (typeof res === "string" && res.includes("Cannot GET")) {
         setError("API endpoint not reachable on the server.");
         return;
       }
 
-      // Data extraction logic
       if (res?._id) {
         setStartup(res);
       } else if (res?.success && res?.data) {
@@ -62,7 +74,7 @@ export default function StartupDetailsPage({ params }) {
     }
   };
 
-  if (loading) {
+  if (loading || isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
         <div className="text-center">
@@ -71,6 +83,11 @@ export default function StartupDetailsPage({ params }) {
         </div>
       </div>
     );
+  }
+
+  // ইউজার না থাকলে রিডাইরেক্ট হওয়া পর্যন্ত খালি বা স্পিনার রেন্ডার করবে
+  if (!user) {
+    return null;
   }
 
   if (error || !startup) {

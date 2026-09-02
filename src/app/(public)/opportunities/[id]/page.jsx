@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 
 import { serverFetch } from "@/lib/api";
@@ -11,8 +11,10 @@ import ApplyModal from "@/components/dashboard/ApplyModal";
 export default function OpportunityDetailsPage() {
   const params = useParams();
   const id = params?.id;
+  const router = useRouter();
+  const pathname = usePathname();
 
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending: isAuthLoading } = authClient.useSession();
   const user = session?.user;
 
   const [opportunity, setOpportunity] = useState(null);
@@ -58,7 +60,19 @@ export default function OpportunityDetailsPage() {
     }
   };
 
-  if (loading) {
+  // 🟢 Apply Button Click Handler (Login Guard)
+  const handleApplyClick = () => {
+    if (!user) {
+      // ইউজার লগইন না থাকলে /login পেজে পাঠিয়ে দিবে (মেইন পেজে ফেরত আসার জন্য redirect param সহ)
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    
+    // ইউজার লগইন থাকলে Modal ওপেন হবে
+    setShowApplyModal(true);
+  };
+
+  if (loading || isAuthLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
         <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
@@ -132,7 +146,7 @@ export default function OpportunityDetailsPage() {
                   </button>
                 ) : (
                   <button
-                    onClick={() => setShowApplyModal(true)}
+                    onClick={handleApplyClick}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 rounded-xl font-semibold transition whitespace-nowrap shadow-sm cursor-pointer"
                   >
                     Apply Now
